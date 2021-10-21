@@ -7,6 +7,7 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "role" "Role" NOT NULL,
+    "password" TEXT NOT NULL,
     "blockchainAddress" TEXT NOT NULL,
     "teamId" INTEGER,
 

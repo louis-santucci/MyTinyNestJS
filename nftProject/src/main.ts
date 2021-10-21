@@ -8,8 +8,6 @@ async function bootstrap() {
     const config = new DocumentBuilder()
     .setTitle('API Documentation')
     .setVersion('1.0')
-    .addTag('plant')
-    .addTag('search')
     .build();
 
     const document = SwaggerModule.createDocument(app, config);

@@ -25,6 +25,8 @@ services :
       dockerfile: ./Dockerfile
     ports:
       - 3000:3000
+    environment:
+      JWT_SECRET: epita
     volumes: # ONLY FOR DEV !!!
       - ./nftProject/src:/app/src
     depends_on:

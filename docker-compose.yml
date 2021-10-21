@@ -1,8 +1,9 @@
 version: '3.1'
 services :
   database:
-    container_name: postgreSQL
+    container_name: database
     image: postgres:13-alpine
+    restart: always
     ports:
       - "5432:5432"
     environment:
@@ -16,4 +17,13 @@ services :
     ports:
       - 8090:8080
     depends_on: 
+      - database
+  app:
+    container_name: app
+    build:
+      context: ./nftProject
+      dockerfile: ./Dockerfile
+    ports:
+      - 3001:3001
+    depends_on:
       - database

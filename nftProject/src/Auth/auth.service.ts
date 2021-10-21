@@ -4,7 +4,7 @@ import { AuthCredentialsDto } from '../Users/DTO/auth-credentials.dto';
 import { PrismaService } from '../Prisma/prisma.service';
 import { UserCreateDto } from '../Users/DTO/user-create.dto';
 import { JwtService } from '@nestjs/jwt';
-import {SigninDto} from "../Users/DTO/signin.dto";
+import { SigninDto } from '../Users/DTO/signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -60,9 +60,12 @@ export class AuthService {
   // Returns the generated JWT token, else returns a 401 response
   async signIn(signinDto: SigninDto) {
     const { email, password } = signinDto;
-    const validatedUser = await this.validateUser(email, password);
-    if (validatedUser !== null) {
-      const payload = { email: email };
+    const user = await this.validateUser(email, password);
+    if (user !== null) {
+      const payload = {
+        id: user.id,
+        email: user.email,
+      };
       return {
         accessToken: this.jwtService.sign(payload),
       };

@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  UNLOGGED
+}
+
+model User {
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  email                 String        @unique
+  role                  Role
+  blockchainAddress     String
+  team                  Team?         @relation(fields: [teamId], references: [id])
+  teamId                Int?
+  nft                   Nft[]
+  buying                Sale[]        @relation("buying")
+  selling               Sale[]        @relation("selling")
+}
+
+model Team {
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  users                 User[]
+  balance               Float
+  nftCollection         NftCollection?
+}
+
+model Nft {
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  user                  User          @relation(fields: [userId], references: [id])
+  userId                Int
+  price                 Float
+  status                String
+  history               String
+  nftCollection         NftCollection @relation(fields: [nftCollectionId], references: [id])
+  nftCollectionId       Int
+  rate                  Float
+  nbRates               Int
+  sale                  Sale[]
+}
+
+model NftCollection {
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  logo                  String
+  status                String
+  autoArchive           DateTime      @default(now())
+  team                  Team          @relation(fields: [teamId], references: [id])
+  teamId                Int
+  rate                  Float
+  nft                   Nft[]
+}
+
+model Sale {
+  id                    Int           @id @default(autoincrement())
+  buyer                 User          @relation("buying",fields: [buyerId], references: [id])
+  buyerId               Int
+  seller                User          @relation("selling",fields: [sellerId], references: [id])
+  sellerId              Int
+  nft                   Nft           @relation(fields: [nftId], references: [id])
+  nftId                 Int
+}

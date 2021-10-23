@@ -1,43 +1,69 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import {Controller, Get, Query, Param, Post, Body, Put} from '@nestjs/common';
 import { NftService } from './nft.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {NFTCreateDto} from "./DTO/nft-create.dto";
+import {NFTUpdateDto} from "./DTO/nft-update.dto";
+import {FindOneParams} from "../findOneParams";
 
 @ApiTags('nft')
 @Controller('nft')
 export class NftController {
     constructor(private readonly nftService: NftService) {}
 
-    @Get('/add')
-    @ApiOperation({summary: 'Nft'})
+    @Get('/')
+    @ApiOperation({summary: 'Get all NFT'})
     @ApiResponse({
         status: 200,
-        description: 'Nft',
-        type: [Array]
+        description: 'The list of all NFT',
+        type: [Array],
     })
-    addNft(): void {
-        return this.nftService.addNft();
+    async getSales() {
+        return this.nftService.getNFTs();
     }
 
-    @Get('/update')
-    @ApiOperation({summary: 'Nft'})
+    @Post('/')
+    @ApiOperation({summary: 'Add a NFT'})
     @ApiResponse({
         status: 200,
-        description: 'Nft',
+        description: 'NFT added',
         type: [Array]
     })
-    updateNft(): void {
-        return this.nftService.updateNft();
+    async createSale(@Body() body : NFTCreateDto) {
+        return this.nftService.createNFT(body);
     }
 
-    @Get('/rate')
-    @ApiOperation({summary: 'Nft'})
+    @Put('/:id')
+    @ApiOperation({summary: 'Update NFT'})
     @ApiResponse({
         status: 200,
-        description: 'Nft',
+        description: 'NFT updated',
         type: [Array]
     })
-    rateNft(): void {
-        return this.nftService.rateNft();
+    async updateNft(@Param() { id }: FindOneParams,
+                    @Body() nft: NFTUpdateDto) {
+        return this.nftService.updateNft(Number(id), nft);
+    }
+
+    @Get('/highestrate')
+    @ApiOperation({summary: 'Get highest rated NFT'})
+    @ApiResponse({
+        status: 200,
+        description: 'Highest rated NFT',
+        type: [Array]
+    })
+    async getRateNft() {
+        return this.nftService.getHighestRatedNft();
+    }
+
+    @Get('/mostrated')
+    @ApiOperation({summary: 'Get most rated NFT'})
+    @ApiResponse({
+        status: 200,
+        description: 'Most rated NFT',
+        type: [Array]
+    })
+    async getMostRatedNft() {
+        return this.nftService.getMostRatedNft();
     }
 }

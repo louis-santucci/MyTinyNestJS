@@ -1,43 +1,53 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, Request, UseGuards, Param, Post, Body } from '@nestjs/common';
 import { TeamService } from './team.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { FindOneParams } from 'src/findOneParams';
+import { TeamCreateDto } from './DTO/team-create.dto';
+import { TeamAddMemberDto } from './DTO/team-add-member.dto';
+import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
+import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
 
-@ApiTags('team')
+@ApiTags('Team')
 @Controller('team')
 export class TeamController {
     constructor(private readonly teamService: TeamService) {}
 
-    @Get('/create')
-    @ApiOperation({summary: 'Team'})
+    @Post('/')
+    @ApiOperation({summary: 'Create a Team'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'Team',
+        description: 'Function to create a team as a logged user.',
         type: [String]
     })
-    createTeam(): void {
-        return this.teamService.createTeam('', 0);
+    async createTeam(@Request() req, @Body() body: TeamCreateDto) {
+        return this.teamService.createTeam(req.user.email, body);
     }
 
-    @Get('/add')
-    @ApiOperation({summary: 'Add'})
+    @Post('/add')
+    @ApiOperation({summary: 'Add a new member to a Team'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'Add',
+        description: 'Function to create a team as a logged user.',
         type: [String]
     })
-    addMember(): void {
-        return this.teamService.addMember(0);
+    async addMember(@Request() req, @Body() body: TeamAddMemberDto) {
+        return this.teamService.addMember(req.user.email, body.email);
     }
 
-    @Get('/balance')
-    @ApiOperation({summary: 'Balance'})
+    @Post('/:id')
+    @ApiOperation({summary: 'Update the balance of a Team'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'Balance',
+        description: 'Update the balance of a Team only if the user is an Admin.',
         type: [String]
     })
-    updateBalance(): void {
-        return this.teamService.updateBalance(0);
+    async updateBalance(@Request() req,
+                        @Param() { id }: FindOneParams,
+                        @Body() body: TeamUpdateBalanceDto) {
+        return this.teamService.updateBalance(req.user.email, id, body);
     }
 }

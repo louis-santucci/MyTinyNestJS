@@ -8,10 +8,4 @@ export class TeamCreateDto {
         description: 'The name of a Team',
     })
     name : string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'The balance of a Team',
-    })
-    balance : number;
 }

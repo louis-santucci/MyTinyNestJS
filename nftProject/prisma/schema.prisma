@@ -52,8 +52,8 @@ model Nft {
   price                 Float
   status                Status
   history               String
-  nftCollection         NftCollection @relation(fields: [nftCollectionId], references: [id])
-  nftCollectionId       Int
+  nftCollection         NftCollection? @relation(fields: [nftCollectionId], references: [id])
+  nftCollectionId       Int?
   rate                  Float
   nbRates               Int
   sale                  Sale[]

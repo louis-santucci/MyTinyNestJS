@@ -18,9 +18,21 @@ export class SaleService {
 
     async createSale(sale: SaleCreateDto) {
         try {
-            return this.prismaService.sale.create({
+            const tmp = this.prismaService.sale.create({
                 data: sale,
             });
+            this.logger.log(
+                '[SALE] NFT sold { timestamp:' +
+                new Date() +
+                ', buyerId:' +
+                sale.buyerId +
+                ', sellerId:' +
+                sale.sellerId +
+                ', nftId:' +
+                sale.nftId +
+                '}',
+            );
+            return tmp;
         } catch (e) {
             this.logger.error('Error adding new sale ', e);
         }

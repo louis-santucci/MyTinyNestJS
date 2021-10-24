@@ -24,7 +24,7 @@ export class TeamService {
                 },
             });
     
-            if (user.teamId !== null) {
+            if (user.teamId === null) {
                 const result = "You created the team: "
 
                 const team = await this.prismaService.team.create({

@@ -30,7 +30,8 @@ export class TeamService {
                 const team = await this.prismaService.team.create({
                     data: {
                         name: body.name,
-                        balance: body.balance,
+                        leaderEmail: user_email,
+                        balance: 0,
                     },
                 });
 

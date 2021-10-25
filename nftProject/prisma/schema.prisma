@@ -40,6 +40,7 @@ model Team {
   id                    Int           @id @default(autoincrement())
   name                  String
   users                 User[]
+  leaderEmail           String
   balance               Float
   nftCollection         NftCollection?
 }

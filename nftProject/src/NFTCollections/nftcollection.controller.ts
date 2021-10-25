@@ -1,54 +1,60 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, UseGuards, Request, Param, Post, Body, Get } from '@nestjs/common';
 import { NftCollectionService } from './nftcollection.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
+import { FindOneParams } from 'src/findOneParams';
 
-@ApiTags('nftcollection')
+@ApiTags('Nftcollection')
 @Controller('nftcollection')
 export class NftCollectionController {
     constructor(private readonly nftCollectionService: NftCollectionService) {}
 
-    @Get('/create')
-    @ApiOperation({summary: 'NftCollection'})
+    @Post('/')
+    @ApiOperation({summary: 'Create a NftCollection'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'NftCollection',
-        type: [Array]
+        description: "Create a NftCollection if the team does'nt have a NftCollection.",
+        type: [String]
     })
-    createCollection(): void {
-        return this.nftCollectionService.createCollection();
+    async createCollection(@Request() req, @Body() body) {
+        return this.nftCollectionService.createCollection(req.user.email, body);
     }
 
-    @Get('/add')
-    @ApiOperation({summary: 'NftCollection'})
+    @Post('/addNft/:id')
+    @ApiOperation({summary: 'Add a NFT to a NftCollection'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'NftCollection',
+        description: 'Add a NFT to a NftCollection',
         type: [Array]
     })
-    addNft(): void {
-        return this.nftCollectionService.addNft();
+    async addNft(@Request() req, @Param() { id }: FindOneParams) {
+        return this.nftCollectionService.addNft(req.user.email, id);
     }
 
-    @Get('/delete')
-    @ApiOperation({summary: 'NftCollection'})
+    @Post('/deleteNft/:id')
+    @ApiOperation({summary: 'Delete a NFT to a NftCollection'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'NftCollection',
+        description: 'Delete a NFT to a NftCollection',
         type: [Array]
     })
-    deleteNft(): void {
-        return this.nftCollectionService.deleteNft();
+    async deleteNft(@Request() req, @Param() { id }: FindOneParams) {
+        return this.nftCollectionService.deleteNft(req.user.email, id);
     }
 
-    @Get('/update')
-    @ApiOperation({summary: 'NftCollection'})
+    @Post('/update')
+    @ApiOperation({summary: 'Update a NftCollection'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
-        description: 'NftCollection',
+        description: 'Update an existing NftCollection',
         type: [Array]
     })
-    updateCollection(): void {
-        return this.nftCollectionService.updateCollection();
+    async updateCollection(@Request() req, @Body() body) {
+        return this.nftCollectionService.updateCollection(req.user.email, body);
     }
 }

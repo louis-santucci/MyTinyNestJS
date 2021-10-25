@@ -16,8 +16,18 @@ export class SaleService {
         return this.prismaService.sale.findMany();
     }
 
-    async createSale(sale: SaleCreateDto) {
+    async createSale(sale: SaleCreateDto, userEmail: string) {
         try {
+            var user = await this.prismaService.user.findUnique({
+                where: {
+                    email: userEmail,
+                },
+            });
+
+            if (user.id != sale.sellerId){
+                return "Only the seller can make a sell";
+            }
+
             const tmp = this.prismaService.sale.create({
                 data: sale,
             });

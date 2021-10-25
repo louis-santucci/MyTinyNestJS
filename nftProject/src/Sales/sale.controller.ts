@@ -1,9 +1,10 @@
-import {Controller, Get, Query, Param, Post, Request, Body} from '@nestjs/common';
+import {Controller, Get, Query, Param, Post, Request, Body, UseGuards} from '@nestjs/common';
 import { SaleService } from './sale.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Role } from '.prisma/client';
 import {SaleCreateDto} from "./DTO/sale-create.dto";
+import {JwtAuthGuard} from "../Auth/jwt.auth.guard";
 
 @ApiTags('sale')
 @Controller('sale')
@@ -23,12 +24,13 @@ export class SaleController {
 
     @Post('/')
     @ApiOperation({summary: 'Add a sale'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
         description: 'Sale added',
         type: [Array]
     })
-    async createSale(@Body() body: SaleCreateDto) {
-        return this.saleService.createSale(body);
+    async createSale(@Body() body: SaleCreateDto, @Request() req) {
+        return this.saleService.createSale(body, req.user.email);
     }
 }

@@ -1,10 +1,11 @@
-import {Controller, Get, Query, Param, Post, Body, Put} from '@nestjs/common';
+import {Controller, Get, Query, Param, Post, Body, Put, UseGuards, Request} from '@nestjs/common';
 import { NftService } from './nft.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import {NFTCreateDto} from "./DTO/nft-create.dto";
 import {NFTUpdateDto} from "./DTO/nft-update.dto";
 import {FindOneParams} from "../findOneParams";
+import {JwtAuthGuard} from "../Auth/jwt.auth.guard";
 
 @ApiTags('nft')
 @Controller('nft')
@@ -18,31 +19,34 @@ export class NftController {
         description: 'The list of all NFT',
         type: [Array],
     })
-    async getSales() {
+    async getNFTs() {
         return this.nftService.getNFTs();
     }
 
     @Post('/')
     @ApiOperation({summary: 'Add a NFT'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
         description: 'NFT added',
         type: [Array]
     })
-    async createSale(@Body() body : NFTCreateDto) {
-        return this.nftService.createNFT(body);
+    async createNFT(@Body() body : NFTCreateDto, @Request() req) {
+        return this.nftService.createNFT(body, req.user.email);
     }
 
     @Put('/:id')
     @ApiOperation({summary: 'Update NFT'})
+    @UseGuards(JwtAuthGuard)
     @ApiResponse({
         status: 200,
         description: 'NFT updated',
         type: [Array]
     })
-    async updateNft(@Param() { id }: FindOneParams,
+    async updateNft(@Request() req,
+                    @Param() { id }: FindOneParams,
                     @Body() nft: NFTUpdateDto) {
-        return this.nftService.updateNft(Number(id), nft);
+        return this.nftService.updateNft(Number(id), nft, req.user.email);
     }
 
     @Get('/highestrate')
@@ -52,7 +56,7 @@ export class NftController {
         description: 'Highest rated NFT',
         type: [Array]
     })
-    async getRateNft() {
+    async getHighestRatedNft() {
         return this.nftService.getHighestRatedNft();
     }
 

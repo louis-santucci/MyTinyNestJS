@@ -28,24 +28,8 @@ export class NFTUpdateDto {
     })
     status : Status;
 
-    @IsString()
-    @ApiProperty({
-        description: 'The history of owners',
-    })
-    history : string;
-
     @ApiProperty({
         description: 'The collection Id of the NFT',
     })
     nftCollectionId : number;
-
-    @ApiProperty({
-        description: 'The rate of the NFT',
-    })
-    rate : number;
-
-    @ApiProperty({
-        description: 'The number of rates of the NFT',
-    })
-    nbRates : number;
 }

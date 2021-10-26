@@ -50,6 +50,7 @@ model Nft {
   name                  String
   user                  User          @relation(fields: [userId], references: [id])
   userId                Int
+  imagePath             String
   price                 Float
   status                Status
   history               String

@@ -16,6 +16,13 @@ export class NFTCreateDto {
     })
     userId : number;
 
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: 'The path of the image',
+    })
+    imagePath : string;
+
     @IsNotEmpty()
     @ApiProperty({
         description: 'The price of the NFT',
@@ -33,11 +40,6 @@ export class NFTCreateDto {
         description: 'The history of owners',
     })
     history : string;
-
-    @ApiProperty({
-        description: 'The collection Id of the NFT',
-    })
-    nftCollectionId : number;
 
     @ApiProperty({
         description: 'The rate of the NFT',

@@ -6,6 +6,8 @@ import {NFTCreateDto} from "./DTO/nft-create.dto";
 import {NFTUpdateDto} from "./DTO/nft-update.dto";
 import {FindOneParams} from "../findOneParams";
 import {JwtAuthGuard} from "../Auth/jwt.auth.guard";
+import {NFTCreateInput} from "./DTO/nft-create-input";
+import {NFTRateInput} from "./DTO/nft-rate-input";
 
 @ApiTags('nft')
 @Controller('nft')
@@ -31,7 +33,7 @@ export class NftController {
         description: 'NFT added',
         type: [Array]
     })
-    async createNFT(@Body() body : NFTCreateDto, @Request() req) {
+    async createNFT(@Body() body : NFTCreateInput, @Request() req) {
         return this.nftService.createNFT(body, req.user.email);
     }
 
@@ -69,5 +71,17 @@ export class NftController {
     })
     async getMostRatedNft() {
         return this.nftService.getMostRatedNft();
+    }
+
+    @Post('/rate/:id')
+    @ApiOperation({summary: 'Rate a NFT'})
+    @UseGuards(JwtAuthGuard)
+    @ApiResponse({
+        status: 200,
+        description: 'Rate NFT',
+        type: [Array]
+    })
+    async rateNft(@Param() { id }: FindOneParams, @Request() req, @Body() body : NFTRateInput) {
+        return this.nftService.rateNft(id, req.user.email, body);
     }
 }

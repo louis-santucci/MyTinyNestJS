@@ -28,9 +28,27 @@ export class SaleService {
                 return "Only the seller can make a sell";
             }
 
+
             const tmp = this.prismaService.sale.create({
                 data: sale,
             });
+
+            var nft = await this.prismaService.nft.findUnique({
+                where: {
+                    id: sale.nftId,
+                },
+            });
+
+            await this.prismaService.nft.update({
+                where: {
+                    id: sale.nftId
+                },
+                data: {
+                    history: nft.history + " " + sale.buyerId,
+                    userId: sale.buyerId
+                },
+            });
+
             this.logger.log(
                 '[SALE] NFT sold { timestamp:' +
                 new Date() +

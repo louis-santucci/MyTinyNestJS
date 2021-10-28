@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../Prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { NftCollectionDto } from './DTO/nft-collection.dto';
-import { SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG } from 'constants';
 
 @Injectable()
 export class NftCollectionService {
@@ -64,10 +63,16 @@ export class NftCollectionService {
     name = name.toLowerCase();
 
     if (offset < 0) {
-      throw new HttpException("The offset cannot be inferior to 0", HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'The offset cannot be inferior to 0',
+        HttpStatus.FORBIDDEN,
+      );
     }
     if (limit < 1) {
-      throw new HttpException("The limit cannot be inferior to 1", HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'The limit cannot be inferior to 1',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     if (collections === null) {
@@ -80,6 +85,14 @@ export class NftCollectionService {
       }
     });
     return results.slice(offset, limit + offset);
+  }
+
+  async getCollection(collectionId: number) {
+    return this.prismaService.nftCollection.findUnique({
+      where: {
+        id: Number(collectionId),
+      },
+    });
   }
 
   async createCollection(

@@ -10,9 +10,17 @@ import {
   ValidationPipe,
   UploadedFile,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { NftCollectionService } from './nftcollection.service';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
@@ -157,7 +165,7 @@ export class NftCollectionController {
     required: false,
     description: 'The name we are looking for',
   })
-  async getNFTs(
+  async getCollections(
     @Query('search') search: string,
     @Query('offset') offset = 0,
     @Query('limit') limit = 10,
@@ -173,5 +181,28 @@ export class NftCollectionController {
       Number(offset),
       Number(limit),
     );
+  }
+
+  @Get('/:id')
+  @ApiOperation({ summary: 'Get collection by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The wanted collection',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted collection Id',
+  })
+  async getNFT(@Param('id') collectionId) {
+    const collection = await this.nftCollectionService.getCollection(
+      collectionId,
+    );
+    if (collection === null) {
+      throw new HttpException(
+        "Not Found. The wanted NFT doesn't exist",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return collection;
   }
 }

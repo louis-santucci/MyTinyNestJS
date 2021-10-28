@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   ValidationPipe,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { NftCollectionService } from './nftcollection.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -20,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
 import { NftCollectionDto } from './DTO/nft-collection.dto';
+import { LimitDto, OffsetDto } from '../Utils/paginationParams';
 
 @ApiTags('NFT Collection')
 @Controller('nftcollection')
@@ -128,6 +130,48 @@ export class NftCollectionController {
       req.user.email,
       body,
       file.filename,
+    );
+  }
+
+  @Get('/')
+  @ApiOperation({ summary: 'Get all NFT collections' })
+  @ApiResponse({
+    status: 200,
+    description: 'The list of all NFT collections',
+    type: [Array],
+  })
+  @ApiQuery({
+    name: 'offset',
+    type: OffsetDto,
+    description: 'The offset for the results',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: LimitDto,
+    description: 'The number of returned collections',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'The name we are looking for',
+  })
+  async getNFTs(
+    @Query('search') search: string,
+    @Query('offset') offset = 0,
+    @Query('limit') limit = 10,
+  ) {
+    if (search) {
+      return this.nftCollectionService.searchCollection(
+        search,
+        Number(offset),
+        Number(limit),
+      );
+    }
+    return this.nftCollectionService.getCollections(
+      Number(offset),
+      Number(limit),
     );
   }
 }

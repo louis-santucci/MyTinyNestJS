@@ -32,6 +32,56 @@ export class NftCollectionService {
     return sum / nfts.length;
   }
 
+  // Get all NFT collections
+  async getCollections(offset?: number, limit?: number) {
+    // Offset/Limit checking
+    if (offset < 0) {
+      throw new HttpException(
+        'The offset cannot be inferior to 0',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (limit < 1) {
+      throw new HttpException(
+        'The limit cannot be inferior to 1',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return this.prismaService.nftCollection.findMany({
+      where: {
+        status: 'PUBLISHED',
+      },
+      orderBy: {
+        id: 'asc',
+      },
+      take: limit,
+      skip: offset,
+    });
+  }
+
+  async searchCollection(name: string, offset: number, limit: number) {
+    const collections = await this.getCollections();
+    name = name.toLowerCase();
+
+    if (offset < 0) {
+      throw new HttpException("The offset cannot be inferior to 0", HttpStatus.FORBIDDEN);
+    }
+    if (limit < 1) {
+      throw new HttpException("The limit cannot be inferior to 1", HttpStatus.FORBIDDEN);
+    }
+
+    if (collections === null) {
+      return null;
+    }
+    const results = [];
+    collections.forEach((collection) => {
+      if (collection.name.toLowerCase().includes(name)) {
+        results.push(collection);
+      }
+    });
+    return results.slice(offset, limit + offset);
+  }
+
   async createCollection(
     useEmail: string,
     body: NftCollectionDto,

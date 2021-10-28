@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../Prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { TeamCreateDto } from './DTO/team-create.dto';
-import { TeamAddMemberDto } from './DTO/team-add-member.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
 import { Role } from '.prisma/client';
 
@@ -59,11 +58,19 @@ export class TeamService {
     }
     const results = [];
     teams.forEach((team) => {
-      if (nft.name.toLowerCase().includes(name)) {
-        results.push(nft);
+      if (team.name.toLowerCase().includes(name)) {
+        results.push(team);
       }
     });
     return results.slice(offset, limit + offset);
+  }
+
+  async getTeam(teamId: number) {
+    return this.prismaService.team.findUnique({
+      where: {
+        id: Number(teamId),
+      },
+    });
   }
 
   async createTeam(user_email: string, body: TeamCreateDto) {

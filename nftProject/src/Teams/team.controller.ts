@@ -8,9 +8,11 @@ import {
   ValidationPipe,
   Get,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { TeamService } from './team.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { FindOneParams } from 'src/findOneParams';
 import { TeamCreateDto } from './DTO/team-create.dto';
@@ -86,6 +88,27 @@ export class TeamController {
     @Body(ValidationPipe) body: TeamAddMemberDto,
   ) {
     return this.teamService.addMember(req.user.email, body.email);
+  }
+
+  @Get('/:id')
+  @ApiOperation({ summary: 'Get Team by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The wanted Team',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted Team id',
+  })
+  async getNFT(@Param('id') teamId) {
+    const team = await this.teamService.getTeam(teamId);
+    if (team === null) {
+      throw new HttpException(
+        "Not Found. The wanted NFT doesn't exist",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return team;
   }
 
   @Post('/:id')

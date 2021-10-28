@@ -9,7 +9,7 @@ import {
 import { ApiProperty, ApiBody } from '@nestjs/swagger';
 import { Status } from '.prisma/client';
 
-export class NFTRateInput {
+export class NftRateDto {
   @IsInt()
   @IsNotEmpty()
   @Min(0)

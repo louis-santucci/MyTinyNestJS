@@ -3,12 +3,11 @@ import {
   IsNumberString,
   IsString,
   Matches,
-  Min,
 } from 'class-validator';
 import { ApiProperty, ApiBody } from '@nestjs/swagger';
 import { Status } from '.prisma/client';
 
-export class NFTCreateInput {
+export class NftCreateDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

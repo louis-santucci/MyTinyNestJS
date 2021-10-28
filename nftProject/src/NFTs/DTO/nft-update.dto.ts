@@ -1,35 +1,44 @@
-import {IsNotEmpty, IsString} from 'class-validator';
+import {
+    IsNotEmpty,
+    IsNumber,
+    IsNumberString, IsOptional,
+    IsPositive,
+    isString,
+    IsString,
+    Matches,
+    Min,
+} from 'class-validator';
 import { ApiProperty, ApiBody } from '@nestjs/swagger';
-import { Status} from '.prisma/client';
+import { Status } from '.prisma/client';
 
-export class NFTUpdateDto {
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'The name of the NFT',
-    })
-    name : string;
+export class NftUpdateDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The name of the NFT',
+  })
+  name: string;
 
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'The owner of the NFT',
-    })
-    userId : number;
+  @IsNumberString()
+  @IsNotEmpty()
+  @Matches(/^(?!-)/, {
+    message: 'The price must be positive',
+  })
+  @ApiProperty({
+    description: 'The price of the NFT',
+  })
+  price: number;
 
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'The price of the NFT',
-    })
-    price : number;
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The status of the NFT',
+  })
+  status: Status;
 
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'The status of the NFT',
-    })
-    status : Status;
-
-    @ApiProperty({
-        description: 'The collection Id of the NFT',
-    })
-    nftCollectionId : number;
+  @IsOptional()
+  @IsNumberString()
+  @ApiProperty({
+    description: 'The collection Id of the NFT',
+  })
+  nftCollectionId: number;
 }

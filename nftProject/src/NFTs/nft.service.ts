@@ -14,12 +14,46 @@ export class NftService {
 
   private readonly logger = new Logger(NftService.name);
 
-  async getNFTs() {
+  async getNFTs(offset?: number, limit?: number) {
+    if (offset < 0) {
+      throw new HttpException("The offset cannot be inferior to 0", HttpStatus.FORBIDDEN);
+    }
+    if (limit < 1) {
+      throw new HttpException("The limit cannot be inferior to 1", HttpStatus.FORBIDDEN);
+    }
     return this.prismaService.nft.findMany({
       where: {
         status: 'PUBLISHED',
       },
+      orderBy: {
+        id: 'asc',
+      },
+      take: limit,
+      skip: offset,
     });
+  }
+
+  async searchNFT(name: string, offset: number, limit: number) {
+    const nfts = await this.getNFTs();
+    name = name.toLowerCase();
+
+    if (offset < 0) {
+      throw new HttpException("The offset cannot be inferior to 0", HttpStatus.FORBIDDEN);
+    }
+    if (limit < 1) {
+      throw new HttpException("The limit cannot be inferior to 1", HttpStatus.FORBIDDEN);
+    }
+
+    if (nfts === null) {
+      return null;
+    }
+    const results = [];
+    nfts.forEach((nft) => {
+      if (nft.name.toLowerCase().includes(name)) {
+        results.push(nft);
+      }
+    });
+    return results.slice(offset, limit + offset);
   }
 
   async getNFT(nftId: number) {

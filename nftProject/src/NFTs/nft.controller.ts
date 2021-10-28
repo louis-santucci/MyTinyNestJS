@@ -34,7 +34,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
 import { diskStorage } from 'multer';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
-import {Type} from "class-transformer";
+import { LimitDto, OffsetDto } from '../Utils/paginationParams';
 
 @ApiTags('Nft')
 @Controller('nft')
@@ -50,8 +50,32 @@ export class NftController {
     description: 'The list of all NFT',
     type: [Array],
   })
-  async getNFTs() {
-    return this.nftService.getNFTs();
+  @ApiQuery({
+    name: 'offset',
+    type: OffsetDto,
+    description: 'The offset for the results',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: LimitDto,
+    description: 'The number of NFT returned',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'The name we are looking for',
+  })
+  async getNFTs(
+    @Query('search') search: string,
+    @Query('offset') offset = 0,
+    @Query('limit') limit = 10,
+  ) {
+    if (search) {
+      return this.nftService.searchNFT(search, Number(offset), Number(limit));
+    }
+    return this.nftService.getNFTs(Number(offset), Number(limit));
   }
 
   @Get('/highestrate')

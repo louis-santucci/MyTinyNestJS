@@ -16,10 +16,16 @@ export class NftService {
 
   async getNFTs(offset?: number, limit?: number) {
     if (offset < 0) {
-      throw new HttpException("The offset cannot be inferior to 0", HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'The offset cannot be inferior to 0',
+        HttpStatus.FORBIDDEN,
+      );
     }
     if (limit < 1) {
-      throw new HttpException("The limit cannot be inferior to 1", HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'The limit cannot be inferior to 1',
+        HttpStatus.FORBIDDEN,
+      );
     }
     return this.prismaService.nft.findMany({
       where: {
@@ -38,10 +44,16 @@ export class NftService {
     name = name.toLowerCase();
 
     if (offset < 0) {
-      throw new HttpException("The offset cannot be inferior to 0", HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'The offset cannot be inferior to 0',
+        HttpStatus.FORBIDDEN,
+      );
     }
     if (limit < 1) {
-      throw new HttpException("The limit cannot be inferior to 1", HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'The limit cannot be inferior to 1',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     if (nfts === null) {
@@ -100,7 +112,6 @@ export class NftService {
     userEmail: string,
     filename: string,
   ) {
-    this.logger.log({nft});
     try {
       const user = await this.prismaService.user.findUnique({
         where: {
@@ -110,7 +121,6 @@ export class NftService {
 
       // Getting current NFT with its ID
       const oldNft = await this.getNFT(id);
-      this.logger.log({oldNft})
       if (user.id != oldNft.userId) {
         throw new HttpException(
           'You are not the owner, you cannot modify it.',

@@ -59,7 +59,7 @@ export class NftController {
   @ApiQuery({
     name: 'limit',
     type: LimitDto,
-    description: 'The number of NFT returned',
+    description: 'The number of returned NFTs',
     required: false,
   })
   @ApiQuery({

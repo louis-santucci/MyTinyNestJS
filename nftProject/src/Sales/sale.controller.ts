@@ -1,12 +1,12 @@
 import {Controller, Get, Query, Param, Post, Request, Body, UseGuards} from '@nestjs/common';
 import { SaleService } from './sale.service';
-import { ApiTags } from '@nestjs/swagger';
+import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Role } from '.prisma/client';
 import {SaleCreateDto} from "./DTO/sale-create.dto";
 import {JwtAuthGuard} from "../Auth/jwt.auth.guard";
 
-@ApiTags('sale')
+@ApiTags('Sale')
 @Controller('sale')
 export class SaleController {
     constructor(private readonly saleService: SaleService) {}
@@ -25,6 +25,7 @@ export class SaleController {
     @Post('/')
     @ApiOperation({summary: 'Add a sale'})
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiResponse({
         status: 200,
         description: 'Sale added',

@@ -26,7 +26,7 @@ To have access to the Adminer part, you need to use the following credentials:
 - Password: root
 - Database: dbjs
 
-![adminer_credentials](./nftProject/files/adminer_credentials.png)
+![adminer_credentials](nftProject/files/adminer_credentials.png)
 
 When running, the app seeds itself with a few users, NFTs and their collections, and some teams.
 

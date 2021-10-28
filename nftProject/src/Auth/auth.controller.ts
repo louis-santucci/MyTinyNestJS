@@ -47,7 +47,7 @@ export class AuthController {
   })
   async signUp(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
-  ): Promise<string> {
+  ): Promise<any> {
     try {
       const newUser: User = await this.authService.signUp(authCredentialsDto);
       this.logger.log(
@@ -59,7 +59,9 @@ export class AuthController {
           newUser.role +
           '}',
       );
-      return newUser.password;
+      return {
+        password: newUser.password
+      };
     } catch (e) {
       throw new HttpException(
         'Forbidden : User cannot be created',

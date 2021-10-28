@@ -1,6 +1,6 @@
 import { Controller, Request, UseGuards, Param, Post, Body } from '@nestjs/common';
 import { TeamService } from './team.service';
-import { ApiTags } from '@nestjs/swagger';
+import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { FindOneParams } from 'src/findOneParams';
 import { TeamCreateDto } from './DTO/team-create.dto';
@@ -16,6 +16,7 @@ export class TeamController {
     @Post('/')
     @ApiOperation({summary: 'Create a Team'})
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiResponse({
         status: 200,
         description: 'Function to create a team as a logged user.',
@@ -28,6 +29,7 @@ export class TeamController {
     @Post('/add')
     @ApiOperation({summary: 'Add a new member to a Team'})
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiResponse({
         status: 200,
         description: 'Function to create a team as a logged user.',
@@ -40,6 +42,7 @@ export class TeamController {
     @Post('/:id')
     @ApiOperation({summary: 'Update the balance of a Team'})
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiResponse({
         status: 200,
         description: 'Update the balance of a Team only if the user is an Admin.',

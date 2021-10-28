@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '.prisma/client';
 
-export class NftCollectionCreateDto {
+export class NftCollectionDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({

@@ -40,14 +40,14 @@ const fakerTeam = async (
 
 const fakerCollection = async (
   name: string,
-  logo: string,
+  imageName: string,
   status: Status,
   teamId: number,
 ) => {
   await prisma.nftCollection.create({
     data: {
       name: name,
-      logo: logo,
+      imageName: imageName,
       status: status,
       rate: -1,
       teamId: teamId,

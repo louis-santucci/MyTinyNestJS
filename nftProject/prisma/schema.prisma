@@ -42,7 +42,7 @@ model Team {
   users                 User[]
   leaderEmail           String
   balance               Float
-  nftCollection         NftCollection?
+  nftCollections        NftCollection[]
 }
 
 model Nft {
@@ -64,7 +64,7 @@ model Nft {
 model NftCollection {
   id                    Int           @id @default(autoincrement())
   name                  String
-  logo                  String
+  imageName             String
   status                Status
   autoArchive           DateTime      @default(now())
   team                  Team          @relation(fields: [teamId], references: [id])

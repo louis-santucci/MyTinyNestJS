@@ -299,4 +299,30 @@ export class NftCollectionController {
     }
     return collection;
   }
+
+  @Get('/:id/image')
+  @ApiOperation({ summary: 'Get image of collection' })
+  @ApiResponse({
+    status: 200,
+    description: 'The image of the collection',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Didn't find the collection",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted collection id',
+  })
+  async getCollectionImage(@Param('id') collectionId, @Res() res) {
+    const collection = await this.nftCollectionService.getCollection(
+      collectionId,
+    );
+    if (collection !== null) {
+      return res.sendFile(collection.imageName, { root: './files' });
+    }
+    res.status(HttpStatus.NOT_FOUND).json({
+      message: 'Collection with id ' + collectionId + ' not found',
+    });
+  }
 }

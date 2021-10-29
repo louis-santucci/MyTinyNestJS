@@ -25,10 +25,4 @@ export class NftCreateDto {
     description: 'The price of the NFT',
   })
   price: number;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    description: 'The status of the NFT',
-  })
-  status: Status;
 }

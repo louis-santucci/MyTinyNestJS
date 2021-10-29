@@ -119,10 +119,10 @@ async function main() {
 
   // --------- NFT ---------------
 
-  await fakerNFT('Nyan Cat', 1, 'nyan_cat.jpg', 420, Status.PUBLISHED, 1);
-  await fakerNFT('Harambe', 1, 'harambe.jpg', 69, Status.PUBLISHED, 1);
-  await fakerNFT('Poker Face', 1, 'poker.jpg', 666, Status.PUBLISHED, 1);
-  await fakerNFT('Lord Farquaad', 1, 'farquaad.jpg', 42, Status.PUBLISHED, 1);
+  await fakerNFT('Nyan Cat', 2, 'nyan_cat.jpg', 420, Status.PUBLISHED, 1);
+  await fakerNFT('Harambe', 2, 'harambe.jpg', 69, Status.PUBLISHED, 1);
+  await fakerNFT('Poker Face', 2, 'poker.jpg', 666, Status.PUBLISHED, 1);
+  await fakerNFT('Lord Farquaad', 2, 'farquaad.jpg', 42, Status.PUBLISHED, 1);
 
   await fakerNFT('Platipus', 1, 'platipus.jpg', 50, Status.DRAFT, 2);
   await fakerNFT('Nazic', 1, 'nazic.jpg', 69420, Status.DRAFT, 2);

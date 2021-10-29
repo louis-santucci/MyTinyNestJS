@@ -4,6 +4,8 @@ import { JwtService } from '@nestjs/jwt';
 import { NftUpdateDto } from './DTO/nft-update.dto';
 import { NftCreateDto } from './DTO/nft-create-dto';
 import { NftRateDto } from './DTO/nft-rate-dto';
+import { Status, Role } from '.prisma/client';
+import { use } from 'passport';
 
 @Injectable()
 export class NftService {
@@ -69,6 +71,7 @@ export class NftService {
   }
 
   async getNFT(nftId: number) {
+    this.logger.log(nftId);
     return this.prismaService.nft.findUnique({
       where: {
         id: Number(nftId),
@@ -82,7 +85,7 @@ export class NftService {
         email: userEmail,
       },
     });
-    if (user.id != body.userId) {
+    if (user.id != body.userId && user.role !== Role.ADMIN) {
       throw new HttpException(
         'Only the author of the NFT can create an NFT',
         HttpStatus.FORBIDDEN,
@@ -95,7 +98,7 @@ export class NftService {
           userId: Number(body.userId),
           imageName: filename,
           price: Number(body.price),
-          status: body.status,
+          status: Status.DRAFT,
           history: '' + body.userId,
           rate: -1,
           nbRates: 0,
@@ -120,7 +123,7 @@ export class NftService {
 
     // Getting current NFT with its ID
     const oldNft = await this.getNFT(id);
-    if (user.id != oldNft.userId) {
+    if (user.id != oldNft.userId && user.role == Role.ADMIN) {
       throw new HttpException(
         'You are not the owner, you cannot modify it.',
         HttpStatus.FORBIDDEN,
@@ -132,7 +135,6 @@ export class NftService {
         data: {
           name: nft.name,
           price: Number(nft.price),
-          status: nft.status,
           imageName: filename,
           id: undefined,
         },
@@ -149,6 +151,40 @@ export class NftService {
       return res;
     } catch (e) {
       this.logger.error('Error updating nft', e);
+    }
+  }
+
+  async updateStatusNft(useEmail: string, id: number, nftStatus: Status) {
+    const nft = await this.getNFT(id);
+    if (nft === null) {
+      throw new HttpException('Nft not found', HttpStatus.NOT_FOUND);
+    }
+
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: useEmail,
+      },
+    });
+
+    if (nft.userId !== user.id && user.role !== Role.ADMIN) {
+      // Add admin role to let admin do the action
+      throw new HttpException(
+        "You cannot update a status of a nft if you aren't the author",
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    try {
+      await this.prismaService.nft.update({
+        where: {
+          id: id,
+        },
+        data: {
+          status: nftStatus,
+        },
+      });
+    } catch (e) {
+      this.logger.error("Error updating NFT's status", e);
     }
   }
 
@@ -197,7 +233,7 @@ export class NftService {
           id: nft.nftCollectionId,
         },
       });
-      if (user.teamId === collection.teamId) {
+      if (user.teamId === collection.teamId && user.role !== Role.ADMIN) {
         throw new HttpException(
           "You can not rate your teammates' nft",
           HttpStatus.FORBIDDEN,
@@ -205,7 +241,7 @@ export class NftService {
       }
     }
 
-    if (user.id === nft.userId) {
+    if (user.id === nft.userId && user.role !== Role.ADMIN) {
       throw new HttpException(
         'You can not rate your own nft',
         HttpStatus.FORBIDDEN,

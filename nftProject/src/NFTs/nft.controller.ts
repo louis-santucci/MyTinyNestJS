@@ -26,7 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { NftUpdateDto } from './DTO/nft-update.dto';
-import { FindOneParams } from '../findOneParams';
+import { FindOneParams } from '../Utils/findOneParams';
 import { JwtAuthGuard } from '../Auth/jwt.auth.guard';
 import { NftCreateDto } from './DTO/nft-create-dto';
 import { NftRateDto } from './DTO/nft-rate-dto';
@@ -35,6 +35,7 @@ import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
 import { diskStorage } from 'multer';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
 import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
+import { NftUpdateStatusDto } from './DTO/nft-update-status.dto';
 
 @ApiTags('Nft')
 @Controller('nft')
@@ -42,6 +43,37 @@ export class NftController {
   constructor(private readonly nftService: NftService) {}
 
   private readonly logger = new Logger(NftController.name);
+
+  @Post('/:id/updateStatus')
+  @ApiOperation({
+    summary: 'Changes the status of a collection and all of its NFTs',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Update the status of an existing NftCollection',
+    type: [Array],
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'the id of the NFT',
+    required: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({
+    type: NftUpdateStatusDto,
+    description: 'The status to change',
+  })
+  updateNftStatus(
+    @Param('id') id : number,
+    @Request() req,
+    @Body(ValidationPipe) body: NftUpdateStatusDto,
+  ) {
+    this.logger.log(id);
+    this.logger.log(body);
+    return this.nftService.updateStatusNft(req.user.email, id, body.status);
+  }
 
   @Get('/')
   @ApiOperation({ summary: 'Get all NFT' })

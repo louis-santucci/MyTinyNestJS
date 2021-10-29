@@ -74,16 +74,14 @@ export class TeamService {
   }
 
   async createTeam(user_email: string, body: TeamCreateDto) {
-    try {
-      const user = await this.prismaService.user.findUnique({
-        where: {
-          email: user_email,
-        },
-      });
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: user_email,
+      },
+    });
 
-      if (user.teamId === null) {
-        const result = 'You created the team: ';
-
+    if (user.teamId === null) {
+      try {
         const team = await this.prismaService.team.create({
           data: {
             name: body.name,
@@ -92,7 +90,7 @@ export class TeamService {
           },
         });
 
-        await this.prismaService.user.update({
+        return await this.prismaService.user.update({
           where: {
             email: user_email,
           },
@@ -100,46 +98,48 @@ export class TeamService {
             teamId: team.id,
           },
         });
-
-        return result.concat('', body.name);
+      } catch (e) {
+        this.logger.error('Error creating a team', e);
       }
-
-      return 'You already have a Team.';
-    } catch (e) {
-      this.logger.error('Error creating a team', e);
     }
+
+    throw new HttpException('You cannot have two teams', HttpStatus.FORBIDDEN);
   }
 
   async addMember(user_email: string, member_email: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: user_email,
+      },
+    });
+
+    const newMember = await this.prismaService.user.findUnique({
+      where: {
+        email: member_email,
+      },
+    });
+
+    if (newMember.teamId !== null) {
+      throw new HttpException(
+        'This user already have a team, you can not add this user to your team.',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    if (user.teamId === null) {
+      throw new HttpException(
+        "You don't have a team to add a member.",
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const team = await this.prismaService.team.findUnique({
+      where: {
+        id: user.teamId,
+      },
+    });
     try {
-      const user = await this.prismaService.user.findUnique({
-        where: {
-          email: user_email,
-        },
-      });
-
-      const newMember = await this.prismaService.user.findUnique({
-        where: {
-          email: member_email,
-        },
-      });
-
-      if (newMember.teamId !== null) {
-        return 'This user already have a team, you can not add this user to your team.';
-      }
-
-      if (user.teamId === null) {
-        return "You don't have a team to add a member.";
-      }
-
-      const startingResult = 'The member ';
-      const team = await this.prismaService.team.findUnique({
-        where: {
-          id: user.teamId,
-        },
-      });
-
-      await this.prismaService.user.update({
+      return this.prismaService.user.update({
         where: {
           email: member_email,
         },
@@ -147,12 +147,6 @@ export class TeamService {
           teamId: team.id,
         },
       });
-
-      return startingResult
-        .concat('', newMember.name)
-        .concat('', ' has been added to the team: ')
-        .concat('', team.name)
-        .concat('', '.');
     } catch (e) {
       this.logger.error('Error adding a member in a team', e);
     }
@@ -163,20 +157,15 @@ export class TeamService {
     id_team: number,
     body: TeamUpdateBalanceDto,
   ) {
-    try {
-      const result = 'The team balance has been updated, the balance is: ';
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: user_email,
+      },
+    });
 
-      const user = await this.prismaService.user.findUnique({
-        where: {
-          email: user_email,
-        },
-      });
-
-      this.logger.log('login');
-      this.logger.log(user.role);
-
-      if (user.role == Role.ADMIN) {
-        await this.prismaService.team.update({
+    if (user.role == Role.ADMIN) {
+      try {
+        return this.prismaService.team.update({
           where: {
             id: Number(id_team),
           },
@@ -184,13 +173,14 @@ export class TeamService {
             balance: body.balance,
           },
         });
-
-        return result.concat('', body.balance.toString());
+      } catch (e) {
+        this.logger.error('Error update balance of team', e);
       }
 
-      return 'You cannot update a team balance.';
-    } catch (e) {
-      this.logger.error('Error update balance of team', e);
+      throw new HttpException(
+        "You cannot balance a team, you aren't admin",
+        HttpStatus.FORBIDDEN,
+      );
     }
   }
 }

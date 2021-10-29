@@ -14,7 +14,7 @@ import {
 import { TeamService } from './team.service';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { FindOneParams } from 'src/findOneParams';
+import { FindOneParams } from 'src/Utils/findOneParams';
 import { TeamCreateDto } from './DTO/team-create.dto';
 import { TeamAddMemberDto } from './DTO/team-add-member.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';

@@ -34,7 +34,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
 import { diskStorage } from 'multer';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
-import { LimitDto, OffsetDto } from '../Utils/paginationParams';
+import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
 
 @ApiTags('Nft')
 @Controller('nft')

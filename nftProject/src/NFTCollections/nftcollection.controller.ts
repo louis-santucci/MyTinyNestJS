@@ -5,7 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  Post,
+  Post, Put,
   Query,
   Request,
   UploadedFile,
@@ -106,7 +106,7 @@ export class NftCollectionController {
     return this.nftCollectionService.deleteNft(req.user.email, id);
   }
 
-  @Post('/update')
+  @Put('/:id')
   @ApiOperation({ summary: 'Update a NftCollection' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -130,7 +130,7 @@ export class NftCollectionController {
     required: true,
   })
   @ApiBody({
-    type: NftCollectionDto,
+    type: NftCollectionUpdateDto,
     description: 'The modified collection',
   })
   async updateCollection(
@@ -230,7 +230,7 @@ export class NftCollectionController {
     name: 'id',
     description: 'The wanted collection Id',
   })
-  async getNFT(@Param('id') collectionId) {
+  async getCollection(@Param('id') collectionId) {
     const collection = await this.nftCollectionService.getCollection(
       collectionId,
     );

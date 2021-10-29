@@ -143,27 +143,32 @@ export class NftCollectionService {
   }
 
   async addNft(useEmail: string, nftId: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: useEmail,
+      },
+    });
+
+    if (user.teamId === null) {
+      throw new HttpException(
+        "You can not add a NFT to a NFT Collection, you don't have a team.",
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const nftCollection = await this.prismaService.nftCollection.findUnique({
+      where: {
+        teamId: user.teamId,
+      },
+    });
+
+    if (nftCollection === null) {
+      throw new HttpException(
+        'Your team needs a NFT Collection to add a NFT.',
+        HttpStatus.FORBIDDEN,
+      );
+    }
     try {
-      const user = await this.prismaService.user.findUnique({
-        where: {
-          email: useEmail,
-        },
-      });
-
-      if (user.teamId === null) {
-        return "You can not add a NFT to a NFT Collection, you don't have a team.";
-      }
-
-      const nftCollection = await this.prismaService.nftCollection.findUnique({
-        where: {
-          teamId: user.teamId,
-        },
-      });
-
-      if (nftCollection === null) {
-        return 'Your team needs a NFT Collection to add a NFT.';
-      }
-
       await this.prismaService.nft.update({
         where: {
           id: Number(nftId),

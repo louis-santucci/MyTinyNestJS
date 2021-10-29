@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../Prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { NftCollectionDto } from './DTO/nft-collection.dto';
+import { Status } from '.prisma/client';
 
 @Injectable()
 export class NftCollectionService {
@@ -168,6 +169,7 @@ export class NftCollectionService {
         },
         data: {
           nftCollectionId: nftCollection.id,
+          status: nftCollection.status,
         },
       });
 
@@ -228,9 +230,34 @@ export class NftCollectionService {
         },
       });
 
+      
+
       return 'The NFT has been deleted.';
     } catch (e) {
       this.logger.error('Error Delete a NFT to NFTCollection', e);
+    }
+  }
+
+  async updateNfts(id: number, collectionStatus : Status) {
+    const nfts = await this.prismaService.nft.findMany({
+      where: {
+        nftCollectionId: id,
+      },
+    });
+
+    if (nfts === null || nfts.length === 0) {
+      return;
+    }
+
+    for (let i = 0; i < nfts.length; i++) {
+      await this.prismaService.nft.update({
+        where: {
+          id: nfts[i].id,
+        },
+        data: {
+          status: collectionStatus,
+        },
+      });
     }
   }
 
@@ -260,7 +287,9 @@ export class NftCollectionService {
 
     if (collection.teamId !== null) {
       try {
-        return this.prismaService.nftCollection.update({
+        await this.updateNfts(collection.id, collection.status);
+
+        return await this.prismaService.nftCollection.update({
           where: {
             id: collection.id,
           },

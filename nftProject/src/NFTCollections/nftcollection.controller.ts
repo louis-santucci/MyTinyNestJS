@@ -29,7 +29,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
 import { NftCollectionDto } from './DTO/nft-collection.dto';
-import { LimitDto, OffsetDto } from '../Utils/paginationParams';
+import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
 
 @ApiTags('NFT Collection')
 @Controller('nftcollection')

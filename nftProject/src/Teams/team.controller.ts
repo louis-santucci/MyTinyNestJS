@@ -19,7 +19,7 @@ import { TeamCreateDto } from './DTO/team-create.dto';
 import { TeamAddMemberDto } from './DTO/team-add-member.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
 import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
-import { LimitDto, OffsetDto } from '../Utils/paginationParams';
+import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
 
 @ApiTags('Team')
 @Controller('team')

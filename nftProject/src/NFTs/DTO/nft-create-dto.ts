@@ -1,10 +1,5 @@
-import {
-  IsNotEmpty,
-  IsNumberString,
-  IsString,
-  Matches,
-} from 'class-validator';
-import { ApiProperty, ApiBody } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumberString, IsString, Matches } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '.prisma/client';
 
 export class NftCreateDto {

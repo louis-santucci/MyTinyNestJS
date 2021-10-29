@@ -60,7 +60,7 @@ export class AuthController {
           '}',
       );
       return {
-        password: newUser.password
+        password: newUser.password,
       };
     } catch (e) {
       throw new HttpException(

@@ -1,12 +1,13 @@
 import {
-    IsNotEmpty,
-    IsNumber,
-    IsNumberString, IsOptional,
-    IsPositive,
-    isString,
-    IsString,
-    Matches,
-    Min,
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsPositive,
+  isString,
+  IsString,
+  Matches,
+  Min,
 } from 'class-validator';
 import { ApiProperty, ApiBody } from '@nestjs/swagger';
 import { Status } from '.prisma/client';

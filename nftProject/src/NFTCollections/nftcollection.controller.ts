@@ -5,15 +5,16 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  Post, Put,
+  Post,
+  Put,
   Query,
-  Request,
+  Request, Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import {NftCollectionService} from './nftcollection.service';
+import { NftCollectionService } from './nftcollection.service';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -24,16 +25,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {diskStorage} from 'multer';
-import {JwtAuthGuard} from 'src/Auth/jwt.auth.guard';
-import {FindOneParams} from 'src/findOneParams';
-import {FileInterceptor} from '@nestjs/platform-express';
-import {editFileName, imageFilter} from '../Utils/file-uploading.utils';
-import {ApiImplicitFile} from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
-import {NftCollectionDto} from './DTO/nft-collection.dto';
-import {LimitDto, OffsetDto} from '../Utils/pagination.utils';
-import {NftCollectionUpdateDto} from './DTO/nft-collection.update.dto';
-import {NftCollectionUpdateStatusDto} from './DTO/nft-collection.update-status.dto';
+import { diskStorage } from 'multer';
+import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
+import { FindOneParams } from 'src/Utils/findOneParams';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
+import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
+import { NftCollectionDto } from './DTO/nft-collection.dto';
+import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
+import { NftCollectionUpdateDto } from './DTO/nft-collection.update.dto';
+import { NftCollectionUpdateStatusDto } from './DTO/nft-collection.update-status.dto';
 
 @ApiTags('NFT Collection')
 @Controller('nftcollection')
@@ -80,7 +81,7 @@ export class NftCollectionController {
     );
   }
 
-  @Post('/addNft/:id')
+  @Post('/:collectionId/addNft/:id')
   @ApiOperation({ summary: 'Add a NFT to a NftCollection' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -89,11 +90,23 @@ export class NftCollectionController {
     description: 'Add a NFT to a NftCollection',
     type: [Array],
   })
-  async addNft(@Request() req, @Param() { id }: FindOneParams) {
-    return this.nftCollectionService.addNft(req.user.email, id);
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted NFT id',
+  })
+  @ApiParam({
+    name: 'collectionId',
+    description: 'The wanted collection Id',
+  })
+  async addNft(
+    @Request() req,
+    @Param(ValidationPipe) { id }: FindOneParams,
+    @Param('collectionId') collectionId: number,
+  ) {
+    return this.nftCollectionService.addNft(collectionId, req.user.email, id);
   }
 
-  @Post('/deleteNft/:id')
+  @Post(':collectionId/deleteNft/:id')
   @ApiOperation({ summary: 'Delete a NFT to a NftCollection' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -102,8 +115,24 @@ export class NftCollectionController {
     description: 'Delete a NFT to a NftCollection',
     type: [Array],
   })
-  async deleteNft(@Request() req, @Param() { id }: FindOneParams) {
-    return this.nftCollectionService.deleteNft(req.user.email, id);
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted NFT id',
+  })
+  @ApiParam({
+    name: 'collectionId',
+    description: 'The wanted collection id',
+  })
+  async deleteNft(
+    @Request() req,
+    @Param() { id }: FindOneParams,
+    @Param('collectionId') collectionId: number,
+  ) {
+    return this.nftCollectionService.deleteNft(
+      collectionId,
+      req.user.email,
+      id,
+    );
   }
 
   @Put('/:id')
@@ -137,12 +166,40 @@ export class NftCollectionController {
     @UploadedFile() file,
     @Request() req,
     @Body(ValidationPipe) body: NftCollectionUpdateDto,
+    @Param('id') { id }: FindOneParams,
   ) {
     return this.nftCollectionService.updateCollection(
+      id,
       req.user.email,
       body,
       file.filename,
     );
+  }
+
+  @Get('/:id/image')
+  @ApiOperation({ summary: 'Get image of NFT' })
+  @ApiResponse({
+    status: 200,
+    description: 'The image of the nft',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Didn't find the NFT",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted NFT id',
+  })
+  async getNFTImage(@Param('id') collectionId, @Res() res) {
+    const collection = await this.nftCollectionService.getCollection(
+      collectionId,
+    );
+    if (collection !== null) {
+      return res.sendFile(collection.imageName, { root: './files' });
+    }
+    res.status(HttpStatus.NOT_FOUND).json({
+      message: 'NFT with id ' + collectionId + ' not found',
+    });
   }
 
   @Post('/updateStatus/:id')

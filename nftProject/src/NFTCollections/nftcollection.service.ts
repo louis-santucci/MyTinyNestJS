@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../Prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { NftCollectionDto } from './DTO/nft-collection.dto';
-import { Status } from '.prisma/client';
+import { Status, Role } from '.prisma/client';
 import { NftCollectionUpdateDto } from './DTO/nft-collection.update.dto';
 
 @Injectable()
@@ -108,66 +108,67 @@ export class NftCollectionService {
       },
     });
 
-    if (user.teamId === null) {
+    if (user.teamId === null && user.role !== Role.ADMIN) {
       throw new HttpException(
         "You can not create a NFT Collection, you don't have a team.",
         HttpStatus.FORBIDDEN,
       );
     }
 
-    const collection = await this.prismaService.nftCollection.findUnique({
-      where: {
-        teamId: user.teamId,
-      },
-    });
-
-    if (collection !== null) {
-      try {
-        return this.prismaService.nftCollection.create({
-          data: {
-            name: body.name,
-            logo: filename,
-            status: body.status,
-            teamId: user.teamId,
-            rate: 0,
-          },
-        });
-      } catch (e) {
-        this.logger.error('Error creating a NFTCollection', e);
-      }
+    try {
+      return this.prismaService.nftCollection.create({
+        data: {
+          name: body.name,
+          imageName: filename,
+          status: body.status,
+          teamId: user.teamId,
+          rate: 0,
+        },
+      });
+    } catch (e) {
+      this.logger.error('Error creating a NFTCollection', e);
     }
-    throw new HttpException(
-      'Your Team already have a NFT Collection.',
-      HttpStatus.FORBIDDEN,
-    );
   }
 
-  async addNft(useEmail: string, nftId: number) {
+  async addNft(collectionId: number, useEmail: string, nftId: number) {
     const user = await this.prismaService.user.findUnique({
       where: {
         email: useEmail,
       },
     });
 
-    if (user.teamId === null) {
+    if (user.teamId === null && user.role !== Role.ADMIN) {
       throw new HttpException(
         "You can not add a NFT to a NFT Collection, you don't have a team.",
         HttpStatus.FORBIDDEN,
       );
     }
+    let nftCollection;
+    if (user.role !== Role.ADMIN) {
+      nftCollection = await this.prismaService.nftCollection.findFirst({
+        where: {
+          id: collectionId,
+          teamId: user.teamId,
+        },
+      });
 
-    const nftCollection = await this.prismaService.nftCollection.findUnique({
-      where: {
-        teamId: user.teamId,
-      },
-    });
-
-    if (nftCollection === null) {
-      throw new HttpException(
-        'Your team needs a NFT Collection to add a NFT.',
-        HttpStatus.FORBIDDEN,
-      );
+      if (nftCollection === null) {
+        throw new HttpException(
+          'Your team needs a NFT Collection to add a NFT in it.',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    } else {
+      nftCollection = await this.prismaService.nftCollection.findFirst({
+        where: {
+          id: collectionId,
+        },
+      });
+      if (nftCollection === null) {
+        throw new HttpException('Unknown collection', HttpStatus.NOT_FOUND);
+      }
     }
+
     try {
       await this.prismaService.nft.update({
         where: {
@@ -180,7 +181,8 @@ export class NftCollectionService {
       });
 
       const newRate = await this.rate(nftCollection.id);
-      await this.prismaService.nftCollection.update({
+
+      return await this.prismaService.nftCollection.update({
         where: {
           id: nftCollection.id,
         },
@@ -188,35 +190,52 @@ export class NftCollectionService {
           rate: newRate,
         },
       });
-
-      return 'The NFT has been added.';
     } catch (e) {
       this.logger.error('Error Adding a NFT to NFTCollection', e);
     }
   }
 
-  async deleteNft(useEmail: string, nftId: number) {
-    try {
-      const user = await this.prismaService.user.findUnique({
-        where: {
-          email: useEmail,
-        },
-      });
+  async deleteNft(collectionId: number, useEmail: string, nftId: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: useEmail,
+      },
+    });
 
-      if (user.teamId === null) {
-        return "You can not delete a NFT of a NFT Collection, you don't have a team.";
-      }
+    if (user.teamId === null && user.role !== Role.ADMIN) {
+      throw new HttpException(
+        "You can not delete a NFT of a NFT Collection, you don't have a team.",
+        HttpStatus.FORBIDDEN,
+      );
+    }
 
-      const nftCollection = await this.prismaService.nftCollection.findUnique({
+    let nftCollection;
+    if (user.role !== Role.ADMIN) {
+      nftCollection = await this.prismaService.nftCollection.findFirst({
         where: {
+          id: collectionId,
           teamId: user.teamId,
         },
       });
 
       if (nftCollection === null) {
-        return 'Your team needs a NFT Collection to delete a NFT.';
+        throw new HttpException(
+          'Your team needs a NFT Collection to add a NFT in it.',
+          HttpStatus.FORBIDDEN,
+        );
       }
+    } else {
+      nftCollection = await this.prismaService.nftCollection.findFirst({
+        where: {
+          id: collectionId,
+        },
+      });
+      if (nftCollection === null) {
+        throw new HttpException('Unknown collection', HttpStatus.NOT_FOUND);
+      }
+    }
 
+    try {
       await this.prismaService.nft.update({
         where: {
           id: Number(nftId),
@@ -227,7 +246,7 @@ export class NftCollectionService {
       });
 
       const newRate = await this.rate(nftCollection.id);
-      await this.prismaService.nftCollection.update({
+      return await this.prismaService.nftCollection.update({
         where: {
           id: nftCollection.id,
         },
@@ -235,8 +254,6 @@ export class NftCollectionService {
           rate: newRate,
         },
       });
-
-      return 'The NFT has been deleted.';
     } catch (e) {
       this.logger.error('Error Delete a NFT to NFTCollection', e);
     }
@@ -270,6 +287,7 @@ export class NftCollectionService {
   }
 
   async updateCollection(
+    collectionId: number,
     useEmail: string,
     body: NftCollectionUpdateDto,
     filename: string,
@@ -280,28 +298,48 @@ export class NftCollectionService {
       },
     });
 
-    if (user.teamId === null) {
+    if (user.teamId === null && user.role !== Role.ADMIN) {
       throw new HttpException(
-        "You can not create a NFT Collection, you don't have a team.",
+        "You can not update a NFT Collection, you don't have a team.",
         HttpStatus.FORBIDDEN,
       );
     }
 
-    const collection = await this.prismaService.nftCollection.findUnique({
-      where: {
-        teamId: user.teamId,
-      },
-    });
+    let nftCollection;
+    if (user.role !== Role.ADMIN) {
+      nftCollection = await this.prismaService.nftCollection.findFirst({
+        where: {
+          id: collectionId,
+          teamId: user.teamId,
+        },
+      });
 
-    if (collection.teamId !== null) {
+      if (nftCollection === null) {
+        throw new HttpException(
+          'Your team needs a NFT Collection to add a NFT in it.',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    } else {
+      nftCollection = await this.prismaService.nftCollection.findFirst({
+        where: {
+          id: collectionId,
+        },
+      });
+      if (nftCollection === null) {
+        throw new HttpException('Unknown collection', HttpStatus.NOT_FOUND);
+      }
+    }
+
+    if (nftCollection.teamId !== null || user.role === Role.ADMIN) {
       try {
         return await this.prismaService.nftCollection.update({
           where: {
-            id: collection.id,
+            id: nftCollection.id,
           },
           data: {
             name: body.name,
-            logo: filename,
+            imageName: filename,
           },
         });
       } catch (e) {
@@ -310,7 +348,7 @@ export class NftCollectionService {
     }
 
     throw new HttpException(
-      'Your team needs a NFT Collection before updating.',
+      'You cannot update a collection which is not yours.',
       HttpStatus.FORBIDDEN,
     );
   }
@@ -321,6 +359,11 @@ export class NftCollectionService {
         id: id,
       },
     });
+
+    if (collection === null) {
+      throw new HttpException('Collection Id Not found', HttpStatus.NOT_FOUND);
+    }
+
     collection.status = status;
     const user = await this.prismaService.user.findUnique({
       where: {
@@ -328,14 +371,19 @@ export class NftCollectionService {
       },
     });
 
-    if (user.teamId === null) {
+    if (user.teamId === null && user.role !== Role.ADMIN) {
+      // Add admin role to let admin do the action
       throw new HttpException(
         "You cannot publish a collection, you don't have any team",
         HttpStatus.FORBIDDEN,
       );
     }
-
-    if (collection.teamId && user.teamId !== collection.teamId) {
+    // Add admin role to let admin do the action
+    if (
+      collection.teamId &&
+      user.teamId !== collection.teamId &&
+      user.role !== Role.ADMIN
+    ) {
       throw new HttpException(
         'You cannot publish a collection that is not from your team',
         HttpStatus.FORBIDDEN,

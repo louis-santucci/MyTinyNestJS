@@ -3,6 +3,7 @@ import { PrismaService } from '../Prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { NftCollectionDto } from './DTO/nft-collection.dto';
 import { Status } from '.prisma/client';
+import { NftCollectionUpdateDto } from './DTO/nft-collection.update.dto';
 
 @Injectable()
 export class NftCollectionService {
@@ -230,15 +231,13 @@ export class NftCollectionService {
         },
       });
 
-      
-
       return 'The NFT has been deleted.';
     } catch (e) {
       this.logger.error('Error Delete a NFT to NFTCollection', e);
     }
   }
 
-  async updateNfts(id: number, collectionStatus : Status) {
+  async updateNfts(id: number, collectionStatus: Status) {
     const nfts = await this.prismaService.nft.findMany({
       where: {
         nftCollectionId: id,
@@ -249,21 +248,25 @@ export class NftCollectionService {
       return;
     }
 
-    for (let i = 0; i < nfts.length; i++) {
-      await this.prismaService.nft.update({
-        where: {
-          id: nfts[i].id,
-        },
-        data: {
-          status: collectionStatus,
-        },
-      });
+    try {
+      for (let i = 0; i < nfts.length; i++) {
+        await this.prismaService.nft.update({
+          where: {
+            id: nfts[i].id,
+          },
+          data: {
+            status: collectionStatus,
+          },
+        });
+      }
+    } catch (e) {
+      this.logger.error("Error updating NFTs' status", e);
     }
   }
 
   async updateCollection(
     useEmail: string,
-    body: NftCollectionDto,
+    body: NftCollectionUpdateDto,
     filename: string,
   ) {
     const user = await this.prismaService.user.findUnique({
@@ -287,8 +290,6 @@ export class NftCollectionService {
 
     if (collection.teamId !== null) {
       try {
-        await this.updateNfts(collection.id, collection.status);
-
         return await this.prismaService.nftCollection.update({
           where: {
             id: collection.id,
@@ -296,7 +297,6 @@ export class NftCollectionService {
           data: {
             name: body.name,
             logo: filename,
-            status: body.status,
           },
         });
       } catch (e) {
@@ -308,5 +308,46 @@ export class NftCollectionService {
       'Your team needs a NFT Collection before updating.',
       HttpStatus.FORBIDDEN,
     );
+  }
+
+  async updateStatusCollection(useEmail: string, id: number, status: Status) {
+    const collection = await this.prismaService.nftCollection.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    collection.status = status;
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: useEmail,
+      },
+    });
+
+    if (user.teamId === null) {
+      throw new HttpException(
+        "You cannot publish a collection, you don't have any team",
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    if (collection.teamId && user.teamId !== collection.teamId) {
+      throw new HttpException(
+        'You cannot publish a collection that is not from your team',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    await this.updateNfts(collection.id, collection.status);
+    try {
+      return this.prismaService.nftCollection.update({
+        where: {
+          id: collection.id,
+        },
+        data: {
+          status: collection.status,
+        },
+      });
+    } catch (e) {
+      this.logger.error('Cannot update status of collection and its NFT', e);
+    }
   }
 }

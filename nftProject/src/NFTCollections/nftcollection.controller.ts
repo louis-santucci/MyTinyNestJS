@@ -1,35 +1,39 @@
 import {
-  Controller,
-  UseGuards,
-  Request,
-  Param,
-  Post,
   Body,
+  Controller,
   Get,
-  UseInterceptors,
-  ValidationPipe,
-  UploadedFile,
-  Query,
   HttpException,
   HttpStatus,
+  Param,
+  Post,
+  Query,
+  Request,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
-import { NftCollectionService } from './nftcollection.service';
+import {NftCollectionService} from './nftcollection.service';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiOperation,
   ApiParam,
+  ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
-import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
-import { FindOneParams } from 'src/findOneParams';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
-import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
-import { NftCollectionDto } from './DTO/nft-collection.dto';
-import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
+import {diskStorage} from 'multer';
+import {JwtAuthGuard} from 'src/Auth/jwt.auth.guard';
+import {FindOneParams} from 'src/findOneParams';
+import {FileInterceptor} from '@nestjs/platform-express';
+import {editFileName, imageFilter} from '../Utils/file-uploading.utils';
+import {ApiImplicitFile} from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
+import {NftCollectionDto} from './DTO/nft-collection.dto';
+import {LimitDto, OffsetDto} from '../Utils/pagination.utils';
+import {NftCollectionUpdateDto} from './DTO/nft-collection.update.dto';
+import {NftCollectionUpdateStatusDto} from './DTO/nft-collection.update-status.dto';
 
 @ApiTags('NFT Collection')
 @Controller('nftcollection')
@@ -132,12 +136,45 @@ export class NftCollectionController {
   async updateCollection(
     @UploadedFile() file,
     @Request() req,
-    @Body(ValidationPipe) body: NftCollectionDto,
+    @Body(ValidationPipe) body: NftCollectionUpdateDto,
   ) {
     return this.nftCollectionService.updateCollection(
       req.user.email,
       body,
       file.filename,
+    );
+  }
+
+  @Post('/updateStatus/:id')
+  @ApiOperation({
+    summary: 'Changes the status of a collection and all of its NFTs',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Update the status of an existing NftCollection',
+    type: [Array],
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'the id of the collection',
+    required: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({
+    type: NftCollectionUpdateStatusDto,
+    description: 'The status to change',
+  })
+  updateCollectionStatus(
+    @Param('id') id: number,
+    @Request() req,
+    @Body(ValidationPipe) body: NftCollectionUpdateStatusDto,
+  ) {
+    return this.nftCollectionService.updateStatusCollection(
+      req.user.email,
+      id,
+      body.status,
     );
   }
 

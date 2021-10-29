@@ -16,7 +16,6 @@ export const imageFilter = (req, file, callback) => {
 
 export const editFileName = (req, file, callback) => {
   const extension = file.originalname.split('.').pop();
-  console.log('Extension of the file : ', extension);
   const newNameFile = Crypto.randomBytes(20).toString('hex') + '.' + extension;
   callback(null, newNameFile);
 };

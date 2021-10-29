@@ -1,8 +1,6 @@
 import {
   IsInt,
   IsNotEmpty,
-  IsString,
-  Matches,
   Max,
   Min,
 } from 'class-validator';

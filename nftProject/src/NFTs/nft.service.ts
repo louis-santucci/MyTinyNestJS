@@ -112,23 +112,22 @@ export class NftService {
     userEmail: string,
     filename: string,
   ) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: userEmail,
+      },
+    });
+
+    // Getting current NFT with its ID
+    const oldNft = await this.getNFT(id);
+    if (user.id != oldNft.userId) {
+      throw new HttpException(
+        'You are not the owner, you cannot modify it.',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    const oldFilename = oldNft.imageName;
     try {
-      const user = await this.prismaService.user.findUnique({
-        where: {
-          email: userEmail,
-        },
-      });
-
-      // Getting current NFT with its ID
-      const oldNft = await this.getNFT(id);
-      if (user.id != oldNft.userId) {
-        throw new HttpException(
-          'You are not the owner, you cannot modify it.',
-          HttpStatus.FORBIDDEN,
-        );
-      }
-      const oldFilename = oldNft.imageName;
-
       const res = await this.prismaService.nft.update({
         data: {
           name: nft.name,
@@ -191,9 +190,9 @@ export class NftService {
         HttpStatus.NOT_FOUND,
       );
     }
-
+    let collection = null;
     if (nft.nftCollectionId != null) {
-      const collection = await this.prismaService.nftCollection.findUnique({
+      collection = await this.prismaService.nftCollection.findUnique({
         where: {
           id: nft.nftCollectionId,
         },
@@ -220,7 +219,7 @@ export class NftService {
       newRate = (nft.rate * rateNumber + body.rate) / (rateNumber + 1);
     }
     try {
-      return await this.prismaService.nft.update({
+      const res = await this.prismaService.nft.update({
         data: {
           ...nft,
           id: undefined,
@@ -231,6 +230,39 @@ export class NftService {
           id: Number(idToRate),
         },
       });
+
+      let nbRates = 0;
+      let sum = 0;
+
+      if (collection !== null) {
+        const collectionNfts = await this.prismaService.nft.findMany({
+          where: {
+            nftCollectionId: collection.id,
+          },
+        });
+        collectionNfts.forEach((nft) => {
+          if (nft.nbRates > 0) {
+            nbRates++;
+            sum += nft.rate;
+          }
+        });
+
+        let result = -1;
+        if (nbRates !== 0) {
+          result = sum / nbRates;
+        }
+
+        await this.prismaService.nftCollection.update({
+          where: {
+            id: collection.id,
+          },
+          data: {
+            rate: result,
+          },
+        });
+      }
+
+      return res;
     } catch (e) {
       this.logger.error('Error rating nft', e);
     }

@@ -136,7 +136,6 @@ export class NftController {
     @Request() req,
     @Body(ValidationPipe) body: NftRateDto,
   ) {
-    this.logger.log(body);
     return this.nftService.rateNft(id, req.user.email, body);
   }
 

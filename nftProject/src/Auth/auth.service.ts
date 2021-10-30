@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Role, User } from '.prisma/client';
 import { AuthCredentialsDto } from '../Users/DTO/auth-credentials.dto';
 import { PrismaService } from '../Prisma/prisma.service';
@@ -59,21 +59,22 @@ export class AuthService {
   // Function that takes an email and a string, and checks the validity of the parameters
   // Returns the generated JWT token, else returns a 401 response
   async signIn(signinDto: SigninDto) {
-    const { email, password } = signinDto;
-    const user = await this.validateUser(email, password);
-    if (user !== null) {
-      const payload = {
-        id: user.id,
-        email: user.email,
-      };
-      return {
-        accessToken: this.jwtService.sign(payload),
-      };
-    } else {
-      return {
-        status: 401,
-        msg: 'Invalid credentials',
-      };
+    try {
+      const { email, password } = signinDto;
+      const user = await this.validateUser(email, password);
+      if (user !== null) {
+        const payload = {
+          id: user.id,
+          email: user.email,
+        };
+        return {
+          accessToken: this.jwtService.sign(payload),
+        };
+      } else {
+        throw new HttpException('Invalid credentials', HttpStatus.FORBIDDEN);
+      }
+    } catch (e) {
+      throw new HttpException('Invalid credentials', HttpStatus.FORBIDDEN);
     }
   }
 

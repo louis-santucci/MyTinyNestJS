@@ -100,7 +100,7 @@ export class NftController {
     description: 'The name we are looking for',
   })
   async getNFTs(
-    @Query('search') search: string,
+    @Query('search') search = '',
     @Query('offset') offset = 0,
     @Query('limit') limit = 10,
   ) {

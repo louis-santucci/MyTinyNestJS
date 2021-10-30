@@ -8,7 +8,8 @@ import {
   Post,
   Put,
   Query,
-  Request, Res,
+  Request,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -26,8 +27,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
-import { FindOneParams } from 'src/Utils/findOneParams';
+import { JwtAuthGuard } from '../Auth/jwt.auth.guard';
+import { FindOneParams } from '../Utils/findOneParams';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFilter } from '../Utils/file-uploading.utils';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';

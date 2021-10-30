@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../Prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
 import { NftUpdateDto } from './DTO/nft-update.dto';
 import { NftCreateDto } from './DTO/nft-create-dto';
 import { NftRateDto } from './DTO/nft-rate-dto';
@@ -9,10 +8,7 @@ import { use } from 'passport';
 
 @Injectable()
 export class NftService {
-  constructor(
-    private prismaService: PrismaService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   private readonly logger = new Logger(NftService.name);
 

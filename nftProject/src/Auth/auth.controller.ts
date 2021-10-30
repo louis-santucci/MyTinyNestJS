@@ -8,7 +8,7 @@ import {
   Logger,
   Get,
   HttpException,
-  HttpStatus,
+  HttpStatus, Res, HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from '.prisma/client';
@@ -38,7 +38,7 @@ export class AuthController {
     type: String,
   })
   @ApiResponse({
-    status: 401,
+    status: 403,
     description: 'The user cannot be created',
   })
   @ApiBody({
@@ -77,13 +77,14 @@ export class AuthController {
     type: String,
   })
   @ApiResponse({
-    status: 401,
+    status: 403,
     description: 'Bad credentials',
   })
   @ApiBody({
     type: SigninDto,
     description: 'The credentials',
   })
+  @HttpCode(200)
   @Post('/signin')
   async signIn(@Body() signinDto: SigninDto) {
     return this.authService.signIn(signinDto);
@@ -104,6 +105,7 @@ export class AuthController {
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Get('/me')
   getMe(@Request() req) {
     return req.user;

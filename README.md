@@ -36,3 +36,9 @@ The Admin account have the following credentials:
 The other users' credentials are directly available on adminer.
 
 All the different requests can be made on Postman, and all the different endpoints of the API server are available in a Swagger with the following link: http://localhost:3000/docs
+
+## Test Suite
+
+We have a e2e test suite done with Jest.
+
+The test suite can be run with ``yarn test``

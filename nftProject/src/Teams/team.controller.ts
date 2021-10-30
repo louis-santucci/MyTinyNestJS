@@ -14,11 +14,10 @@ import {
 import { TeamService } from './team.service';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { FindOneParams } from 'src/Utils/findOneParams';
 import { TeamCreateDto } from './DTO/team-create.dto';
 import { TeamAddMemberDto } from './DTO/team-add-member.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
-import { JwtAuthGuard } from 'src/Auth/jwt.auth.guard';
+import { JwtAuthGuard } from '../Auth/jwt.auth.guard';
 import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
 
 @ApiTags('Team')
@@ -122,7 +121,7 @@ export class TeamController {
   })
   async updateBalance(
     @Request() req,
-    @Param() { id }: FindOneParams,
+    @Param() id: number,
     @Body(ValidationPipe) body: TeamUpdateBalanceDto,
   ) {
     return this.teamService.updateBalance(req.user.email, id, body);

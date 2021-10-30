@@ -1,4 +1,9 @@
 sleep 10;
 npx prisma migrate dev --name init;
-yarn seed;
-yarn start:dev;
+if [ "${E2E_TESTS}" -eq 1 ] ; then
+    yarn test:e2e;
+else
+  yarn seed;
+  yarn start:dev;
+fi
+

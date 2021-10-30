@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
 import { PrismaService } from '../Prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { SaleCreateDto } from './DTO/sale-create.dto';
@@ -12,8 +12,16 @@ export class SaleService {
 
   private readonly logger = new Logger(SaleService.name);
 
-  async getSales() {
-    return this.prismaService.sale.findMany();
+  async getSales(limit?: number) {
+    if (limit < 1) {
+      throw new HttpException(
+          'The limit cannot be inferior to 1',
+          HttpStatus.FORBIDDEN,
+      );
+    }
+    return this.prismaService.sale.findMany({
+      take: limit,
+    });
   }
 
   async createSale(sale: SaleCreateDto, userEmail: string) {
@@ -63,5 +71,30 @@ export class SaleService {
     } catch (e) {
       this.logger.error('Error adding new sale ', e);
     }
+  }
+
+  async getOwnSales(userEmail: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: userEmail,
+      },
+    });
+    try {
+      return await this.prismaService.sale.findMany({
+        where: {
+          sellerId: user.id
+        },
+      });
+    } catch (e) {
+      this.logger.error("Error getting your sales", e);
+    }
+  }
+
+  async getBestSellingTeam() {
+    return Promise.resolve(undefined);
+  }
+
+  async getBestSellingCollection() {
+    return Promise.resolve(undefined);
   }
 }

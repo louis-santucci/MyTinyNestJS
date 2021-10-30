@@ -14,6 +14,7 @@ import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Role } from '.prisma/client';
 import { SaleCreateDto } from './DTO/sale-create.dto';
 import { JwtAuthGuard } from '../Auth/jwt.auth.guard';
+import {LimitDto} from "../Utils/pagination.utils";
 
 @ApiTags('Sale')
 @Controller('sale')
@@ -27,8 +28,48 @@ export class SaleController {
     description: 'The list of all sales',
     type: [Array],
   })
-  async getSales() {
-    return this.saleService.getSales();
+  @ApiQuery({
+    name: 'limit',
+    type: LimitDto,
+    description: 'The number of returned NFTs',
+    required: false,
+  })
+  async getSales(@Query('limit') limit = 10,) {
+    return this.saleService.getSales(Number(limit));
+  }
+
+  @Get('/ownsales')
+  @ApiOperation({ summary: 'Get own sales' })
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'The list of all sales you\'ve made',
+    type: [Array],
+  })
+  async getOwnSales(@Request() req) {
+    return this.saleService.getOwnSales(req.user.email);
+  }
+
+  @Get('/bestsellingteam')
+  @ApiOperation({ summary: 'Get own sales' })
+  @ApiResponse({
+    status: 200,
+    description: 'The best selling team',
+    type: [Array],
+  })
+  async getBestSellingTeam() {
+    return this.saleService.getBestSellingTeam();
+  }
+
+  @Get('/bestsellingcollection')
+  @ApiOperation({ summary: 'Get best selling collection' })
+  @ApiResponse({
+    status: 200,
+    description: 'The best selling collection',
+    type: [Array],
+  })
+  async getBestSellingCollection() {
+    return this.saleService.getBestSellingCollection();
   }
 
   @Post('/')

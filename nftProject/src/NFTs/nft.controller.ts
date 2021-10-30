@@ -110,6 +110,18 @@ export class NftController {
     return this.nftService.getNFTs(Number(offset), Number(limit));
   }
 
+  @Get('/mynft')
+  @ApiOperation({ summary: 'Get own NFTs' })
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'The list of all your NFT',
+    type: [Array],
+  })
+  async getOwnNFTs(@Request() req) {
+    return this.nftService.getOwnNFTs(req.user.email);
+  }
+
   @Get('/highestrate')
   @ApiOperation({ summary: 'Get highest rated NFT' })
   @ApiResponse({

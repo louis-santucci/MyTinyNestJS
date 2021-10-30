@@ -303,4 +303,21 @@ export class NftService {
       this.logger.error('Error rating nft', e);
     }
   }
+
+  async getOwnNFTs(userEmail: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: userEmail,
+      },
+    });
+    try {
+      return this.prismaService.nft.findMany({
+        where: {
+          userId: user.id
+        },
+      });
+    } catch (e) {
+      this.logger.error("Error getting your nfts", e);
+    }
+  }
 }

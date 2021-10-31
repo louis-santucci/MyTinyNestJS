@@ -67,6 +67,8 @@ export class NftService {
   }
 
   async getNFT(nftId: number) {
+    if (isNaN(Number(nftId)))
+      throw new HttpException('NFT id is NaN', HttpStatus.BAD_REQUEST);
     this.logger.log(nftId);
     return this.prismaService.nft.findUnique({
       where: {
@@ -81,7 +83,7 @@ export class NftService {
         email: userEmail,
       },
     });
-    if (user.id != body.userId && user.role !== Role.ADMIN) {
+    if (user.id !== body.userId && user.role === Role.USER) {
       throw new HttpException(
         'Only the author of the NFT can create an NFT',
         HttpStatus.FORBIDDEN,
@@ -101,7 +103,7 @@ export class NftService {
         },
       });
     } catch (e) {
-      this.logger.error('Error adding nft', e);
+      throw new HttpException('Error adding nft', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -109,44 +111,49 @@ export class NftService {
     id: number,
     nft: NftUpdateDto,
     userEmail: string,
-    filename: string,
+    filename?: string,
   ) {
-    const user = await this.prismaService.user.findUnique({
-      where: {
-        email: userEmail,
-      },
-    });
-
-    // Getting current NFT with its ID
-    const oldNft = await this.getNFT(id);
-    if (user.id != oldNft.userId && user.role == Role.ADMIN) {
-      throw new HttpException(
-        'You are not the owner, you cannot modify it.',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-    const oldFilename = oldNft.imageName;
     try {
-      const res = await this.prismaService.nft.update({
-        data: {
-          name: nft.name,
-          price: Number(nft.price),
-          imageName: filename,
-          id: undefined,
-        },
+      const user = await this.prismaService.user.findUnique({
         where: {
-          id,
+          email: userEmail,
         },
       });
 
-      // Fs is used to delete old image
-      const fs = await import('fs');
+      // Getting current NFT with its ID
+      const oldNft = await this.getNFT(id);
+      if (user.id != oldNft.userId && user.role == Role.ADMIN) {
+        throw new HttpException(
+          'You are not the owner, you cannot modify it.',
+          HttpStatus.FORBIDDEN,
+        );
+      }
 
-      fs.unlinkSync('./files/' + oldFilename);
+      const oldFilename = oldNft.imageName;
+
+      if (nft && nft.name) oldNft.name = nft.name;
+
+      if (nft && nft.price) oldNft.price = Number(nft.price);
+
+      if (filename) oldNft.imageName = filename;
+
+      const res = await this.prismaService.nft.update({
+        data: { ...oldNft },
+        where: {
+          id: id,
+        },
+      });
+
+      if (filename) {
+        // Fs is used to delete old image
+        const fs = await import('fs');
+
+        fs.unlinkSync('./files/' + oldFilename);
+      }
 
       return res;
     } catch (e) {
-      this.logger.error('Error updating nft', e);
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -309,11 +316,11 @@ export class NftService {
     try {
       return this.prismaService.nft.findMany({
         where: {
-          userId: user.id
+          userId: user.id,
         },
       });
     } catch (e) {
-      this.logger.error("Error getting your nfts", e);
+      this.logger.error('Error getting your nfts', e);
     }
   }
 }

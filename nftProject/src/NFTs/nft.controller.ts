@@ -144,7 +144,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
-    example: 1
+    example: 1,
   })
   async rateNft(
     @Param() { id }: FindOneParams,
@@ -159,12 +159,12 @@ export class NftController {
   @ApiResponse({
     status: 200,
     description: 'The wanted NFT',
-    type: NftResponse
+    type: NftResponse,
   })
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
-    example: 1
+    example: 1,
   })
   async getNFT(@Param('id') ntfId) {
     const nft = await this.nftService.getNFT(ntfId);
@@ -190,7 +190,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
-    example: 1
+    example: 1,
   })
   async getNFTImage(@Param('id') NftId, @Res() res) {
     const nft = await this.nftService.getNFT(NftId);
@@ -223,7 +223,7 @@ export class NftController {
   @ApiResponse({
     status: 201,
     description: 'NFT added',
-    type: NftResponse
+    type: NftResponse,
   })
   @ApiBody({
     type: NftCreateDto,
@@ -234,6 +234,8 @@ export class NftController {
     @Body(ValidationPipe) body: NftCreateDto,
     @Request() req,
   ) {
+    if (file === undefined || file.filename === undefined)
+      throw new HttpException('No file provided', HttpStatus.BAD_REQUEST);
     return this.nftService.createNFT(body, req.user.email, file.filename);
   }
 
@@ -267,7 +269,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
-    example: 1
+    example: 1,
   })
   async updateNft(
     @UploadedFile() file,
@@ -275,12 +277,15 @@ export class NftController {
     @Param() { id }: FindOneParams,
     @Body(ValidationPipe) nft: NftUpdateDto,
   ) {
-    return this.nftService.updateNft(
-      Number(id),
-      nft,
-      req.user.email,
-      file.filename,
-    );
+    if (file && file.filename) {
+      return this.nftService.updateNft(
+        Number(id),
+        nft,
+        req.user.email,
+        file.filename,
+      );
+    }
+    return this.nftService.updateNft(Number(id), nft, req.user.email, null);
   }
 
   @Post('/:id/updateStatus')
@@ -297,7 +302,7 @@ export class NftController {
     type: Number,
     description: 'the id of the NFT',
     required: true,
-    example: 1
+    example: 1,
   })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -306,7 +311,7 @@ export class NftController {
     description: 'The status to change',
   })
   updateNftStatus(
-    @Param('id') id : number,
+    @Param('id') id: number,
     @Request() req,
     @Body(ValidationPipe) body: NftUpdateStatusDto,
   ) {

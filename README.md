@@ -31,8 +31,9 @@ To have access to the Adminer part, you need to use the following credentials:
 When running, the app seeds itself with a few users, NFTs and their collections, and some teams.
 
 The Admin account have the following credentials:
-- email: admin@admin.fr
-- password: 12345678
+- email: ``admin@gmail.com``
+- password: ``password``
+
 The other users' credentials are directly available on adminer.
 
 All the different requests can be made on Postman, and all the different endpoints of the API server are available in a Swagger with the following link: http://localhost:3000/docs

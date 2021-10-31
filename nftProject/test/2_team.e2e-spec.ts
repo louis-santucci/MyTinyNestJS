@@ -4,14 +4,17 @@ import * as request from 'supertest';
 import { TeamModule } from '../src/Teams/team.module';
 import { AuthModule } from '../src/Auth/auth.module';
 import { Role } from '.prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-describe('TeamController (e2e)', () => {
+describe('[2] TeamController (e2e)', () => {
   let app: INestApplication;
 
   let userPassword: string = null;
-  let accessToken: string = null;
+  let adminAccessToken: string = null;
+  let userAccessToken: string = null;
 
   const userMail = 'team@gmail.com';
+  const adminMail = 'admin@gmail.com';
   const otherUserMail = 'other@mail.com';
 
   beforeEach(async () => {
@@ -22,12 +25,11 @@ describe('TeamController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    if (accessToken === null) {
+    if (adminAccessToken === null) {
       await request(app.getHttpServer()).post('/auth/signup').send({
         name: 'TeamOther',
         email: otherUserMail,
         blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad',
-        role: Role.ADMIN,
       });
 
       const signupReq = await request(app.getHttpServer())
@@ -36,7 +38,6 @@ describe('TeamController (e2e)', () => {
           name: 'Team',
           email: userMail,
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac',
-          role: Role.ADMIN,
         });
       userPassword = signupReq.body.password;
 
@@ -46,13 +47,37 @@ describe('TeamController (e2e)', () => {
           email: userMail,
           password: userPassword,
         });
-      accessToken = signinReq.body.accessToken;
+      userAccessToken = signinReq.body.accessToken;
+
+      const adminSigninReq = await request(app.getHttpServer())
+        .post('/auth/signin')
+        .send({
+          email: adminMail,
+          password: 'password',
+        });
+      adminAccessToken = adminSigninReq.body.accessToken;
     }
   });
 
   describe('/team', () => {
-    it('(GET)  /team - No team', () => {
-      return request(app.getHttpServer()).get('/team').expect(200).expect([]);
+    it('(GET)  /team - 2 team', () => {
+      return request(app.getHttpServer())
+        .get('/team')
+        .expect(200)
+        .expect([
+          {
+            id: 1,
+            name: 'Team 01',
+            leaderEmail: 'john.travolta@gmail.com',
+            balance: 5000,
+          },
+          {
+            id: 2,
+            name: 'Team 02',
+            leaderEmail: 'admin@admin.fr',
+            balance: 10000,
+          },
+        ]);
     });
 
     it('(GET)  /team - offset -1', () => {
@@ -78,18 +103,8 @@ describe('TeamController (e2e)', () => {
         .send({
           name: 'testTeam',
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(userAccessToken, { type: 'bearer' })
         .expect(201);
-    });
-
-    it('(POST) /team - Create same team', () => {
-      return request(app.getHttpServer())
-        .post('/team')
-        .send({
-          name: 'testTeam',
-        })
-        .auth(accessToken, { type: 'bearer' })
-        .expect(400);
     });
 
     it('(POST) /team - Create another team', () => {
@@ -98,7 +113,7 @@ describe('TeamController (e2e)', () => {
         .send({
           name: 'testTeam2',
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -108,7 +123,7 @@ describe('TeamController (e2e)', () => {
         .send({
           nameXXX: 'testTeam',
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -133,7 +148,7 @@ describe('TeamController (e2e)', () => {
         .send({
           email: otherUserMail,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(200);
     });
 
@@ -141,9 +156,9 @@ describe('TeamController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/team/add')
         .send({
-          email: userMail,
+          email: adminMail,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -151,9 +166,9 @@ describe('TeamController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/team/add')
         .send({
-          email: otherUserMail,
+          email: userMail,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -161,9 +176,9 @@ describe('TeamController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/team/add')
         .send({
-          email: otherUserMail + 'x',
+          email: userMail + 'x',
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -171,9 +186,9 @@ describe('TeamController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/team/add')
         .send({
-          emailXXXXXX: otherUserMail,
+          emailXXXXXX: userMail,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
   });
@@ -206,8 +221,18 @@ describe('TeamController (e2e)', () => {
         .send({
           balance: 69420,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(userAccessToken, { type: 'bearer' })
         .expect(403);
+    });
+
+    it('(POST) /team/:id - Valid team and balance, admin', () => {
+      return request(app.getHttpServer())
+        .post('/team/1')
+        .send({
+          balance: 69420,
+        })
+        .auth(adminAccessToken, { type: 'bearer' })
+        .expect(200);
     });
 
     it('(POST) /team/:id - Valid team, invalid balance', () => {
@@ -216,7 +241,7 @@ describe('TeamController (e2e)', () => {
         .send({
           balance: 'number',
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -226,7 +251,7 @@ describe('TeamController (e2e)', () => {
         .send({
           balanceXXX: 69420,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -236,7 +261,7 @@ describe('TeamController (e2e)', () => {
         .send({
           balanceXXX: 69420,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
 
@@ -246,7 +271,7 @@ describe('TeamController (e2e)', () => {
         .send({
           balanceXXX: 69420,
         })
-        .auth(accessToken, { type: 'bearer' })
+        .auth(adminAccessToken, { type: 'bearer' })
         .expect(400);
     });
   });

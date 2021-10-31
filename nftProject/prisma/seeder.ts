@@ -90,8 +90,8 @@ async function main() {
   // --------- Users ---------------
   await fakerUser(
     'Admin',
-    'admin@admin.fr',
-    '12345678',
+    'admin@gmail.com',
+    'password',
     Role.ADMIN,
     '0x0eb81892540747ec60f1389ec734a2c0e5f9f735',
     2,

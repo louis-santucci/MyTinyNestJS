@@ -3,8 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AuthModule } from '../src/Auth/auth.module';
 import { Role } from '.prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-describe('AuthController (e2e)', () => {
+describe('[1] AuthController (e2e)', () => {
   let app: INestApplication;
 
   let userPassword: string;
@@ -26,8 +27,7 @@ describe('AuthController (e2e)', () => {
         .send({
           name: 'Name',
           email: 'email@gmail.com',
-          blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab',
-          role: Role.ADMIN,
+          blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab'
         })
         .expect(201)
         .then((res) => {

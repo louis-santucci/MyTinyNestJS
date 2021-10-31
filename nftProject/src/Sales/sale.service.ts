@@ -16,7 +16,7 @@ export class SaleService {
     if (limit < 1) {
       throw new HttpException(
           'The limit cannot be inferior to 1',
-          HttpStatus.FORBIDDEN,
+          HttpStatus.BAD_REQUEST,
       );
     }
     return this.prismaService.sale.findMany({
@@ -33,7 +33,10 @@ export class SaleService {
       });
 
       if (user.id != sale.sellerId) {
-        return 'Only the seller can make a sell';
+        throw new HttpException(
+          'Error only the seller can make a sell',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const tmp = this.prismaService.sale.create({
@@ -69,7 +72,10 @@ export class SaleService {
       );
       return tmp;
     } catch (e) {
-      this.logger.error('Error adding new sale ', e);
+      throw new HttpException(
+        'Error adding new sale',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -86,7 +92,10 @@ export class SaleService {
         },
       });
     } catch (e) {
-      this.logger.error("Error getting your sales", e);
+      throw new HttpException(
+        'Error getting your sales',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

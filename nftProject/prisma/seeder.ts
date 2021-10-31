@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Role, Status } from '.prisma/client';
 import * as dotenv from 'dotenv';
+import { async } from 'rxjs';
 
 const prisma = new PrismaClient();
 
@@ -78,6 +79,20 @@ const fakerNFT = async (
   });
 };
 
+const fakerSale = async (
+  buyerId: number,
+  sellerId: number,
+  nftId: number,
+) => {
+  await prisma.sale.create({
+    data: {
+      buyerId: buyerId,
+      sellerId: sellerId,
+      nftId: nftId
+    }
+  });
+}
+
 async function main() {
   dotenv.config();
   console.log('Seeding database...');
@@ -126,6 +141,10 @@ async function main() {
 
   await fakerNFT('Platipus', 1, 'platipus.jpg', 50, Status.DRAFT, 2);
   await fakerNFT('Nazic', 1, 'nazic.jpg', 69420, Status.DRAFT, 2);
+
+  // --------- Sale ---------------
+  await fakerSale(3, 2, 1);
+  await fakerSale(3, 2, 2);
 }
 
 main()

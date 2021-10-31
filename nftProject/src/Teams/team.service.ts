@@ -5,6 +5,7 @@ import { TeamCreateDto } from './DTO/team-create.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
 import { Role } from '.prisma/client';
 import { contains } from 'class-validator';
+import { threadId } from 'worker_threads';
 
 @Injectable()
 export class TeamService {
@@ -49,11 +50,25 @@ export class TeamService {
   }
 
   async getTeam(teamId: number) {
-    return this.prismaService.team.findUnique({
-      where: {
-        id: Number(teamId),
-      },
-    });
+    if (isNaN(Number(teamId))) {
+      throw new HttpException(
+        'Team ID is not a number',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      return this.prismaService.team.findUnique({
+        where: {
+          id: Number(teamId),
+        },
+      });
+    } catch (e) {
+      throw new HttpException(
+        'Error, could not get team',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async createTeam(user_email: string, body: TeamCreateDto) {
@@ -109,7 +124,14 @@ export class TeamService {
     });
 
     if (newMember === null || newMember === undefined) {
-      return new HttpException('New member not found', 400);
+      throw new HttpException('New member not found', HttpStatus.BAD_REQUEST);
+    }
+
+    if (newMember.teamId !== null) {
+      throw new HttpException(
+        'This user already have a team',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const team = await this.prismaService.team.findUnique({
@@ -119,11 +141,11 @@ export class TeamService {
     });
 
     if (team === null || team === undefined) {
-      return new HttpException('User not in team', 400);
+      throw new HttpException('User not in team', HttpStatus.BAD_REQUEST);
     }
 
     try {
-      return this.prismaService.user.update({
+      await this.prismaService.user.update({
         where: {
           email: member_email,
         },
@@ -132,13 +154,18 @@ export class TeamService {
         },
       });
     } catch (e) {
-      return new HttpException('Error adding new member to team', 400);
+      throw new HttpException(
+        'Error adding new member to team',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+
+    throw new HttpException('User added in team', HttpStatus.OK);
   }
 
   async updateBalance(
     user_email: string,
-    id_team: number,
+    id_team: string,
     body: TeamUpdateBalanceDto,
   ) {
     const user = await this.prismaService.user.findUnique({
@@ -147,9 +174,16 @@ export class TeamService {
       },
     });
 
-    if (user.role == Role.ADMIN) {
+    if (isNaN(Number(id_team))) {
+      throw new HttpException(
+        'Team ID is not a number',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (user.role === Role.ADMIN) {
       try {
-        return this.prismaService.team.update({
+        await this.prismaService.team.update({
           where: {
             id: Number(id_team),
           },
@@ -158,13 +192,18 @@ export class TeamService {
           },
         });
       } catch (e) {
-        this.logger.error('Error update balance of team', e);
+        throw new HttpException(
+          'Error update balance of team',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-
+    } else {
       throw new HttpException(
         "You cannot balance a team, you aren't admin",
         HttpStatus.FORBIDDEN,
       );
     }
+
+    throw new HttpException('Balance updated', HttpStatus.OK);
   }
 }

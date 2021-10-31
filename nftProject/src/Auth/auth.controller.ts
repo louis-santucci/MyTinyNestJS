@@ -20,7 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SigninDto } from '../Users/DTO/signin.dto';
-import { UserResponse } from 'src/Users/DTO/user-response.dto';
+import { UserResponse } from '../Users/DTO/user-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')

@@ -5,12 +5,14 @@ export class AuthCredentialsDto {
   @IsString()
   @ApiProperty({
     description: 'The name of the user',
+    example: 'testName'
   })
   name: string;
 
   @IsEmail()
   @ApiProperty({
     description: 'The email of the user',
+    example: 'test@test.com'
   })
   email: string;
 
@@ -20,6 +22,7 @@ export class AuthCredentialsDto {
   })
   @ApiProperty({
     description: 'The blockchain address of the user',
+    example: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   })
   blockchainAddress: string;
 }

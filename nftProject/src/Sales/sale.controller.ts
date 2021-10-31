@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Query,
-  Param,
   Post,
   Request,
   Body,
@@ -11,10 +10,10 @@ import {
 import { SaleService } from './sale.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { Role } from '.prisma/client';
 import { SaleCreateDto } from './DTO/sale-create.dto';
 import { JwtAuthGuard } from '../Auth/jwt.auth.guard';
 import {LimitDto} from "../Utils/pagination.utils";
+import { SaleResponse } from './DTO/sale-response.dto';
 
 @ApiTags('Sale')
 @Controller('sale')
@@ -26,7 +25,7 @@ export class SaleController {
   @ApiResponse({
     status: 200,
     description: 'The list of all sales',
-    type: [Array],
+    type: [SaleResponse]
   })
   @ApiQuery({
     name: 'limit',
@@ -44,7 +43,7 @@ export class SaleController {
   @ApiResponse({
     status: 200,
     description: 'The list of all sales you\'ve made',
-    type: [Array],
+    type: [SaleResponse],
   })
   async getOwnSales(@Request() req) {
     return this.saleService.getOwnSales(req.user.email);
@@ -73,13 +72,13 @@ export class SaleController {
   }
 
   @Post('/')
-  @ApiOperation({ summary: 'Add a sale' })
+  @ApiOperation({ summary: 'Add a sale only if you own the NFT' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Sale added',
-    type: [Array],
+    type: SaleResponse,
   })
   async createSale(@Body() body: SaleCreateDto, @Request() req) {
     return this.saleService.createSale(body, req.user.email);

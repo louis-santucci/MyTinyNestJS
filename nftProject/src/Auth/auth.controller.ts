@@ -7,13 +7,9 @@ import {
   ValidationPipe,
   Logger,
   Get,
-  HttpException,
-  HttpStatus,
-  Res,
   HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { User } from '.prisma/client';
 import { AuthCredentialsDto } from '../Users/DTO/auth-credentials.dto';
 import { JwtAuthGuard } from './jwt.auth.guard';
 import {
@@ -24,6 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SigninDto } from '../Users/DTO/signin.dto';
+import { UserResponse } from 'src/Users/DTO/user-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -80,7 +77,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'The email of the user',
-    type: String,
+    type: UserResponse,
   })
   @ApiResponse({
     status: 401,

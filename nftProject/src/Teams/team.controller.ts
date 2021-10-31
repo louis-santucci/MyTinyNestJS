@@ -118,7 +118,7 @@ export class TeamController {
   })
   async updateBalance(
     @Request() req,
-    @Param() id: number,
+    @Param('id') id,
     @Body(ValidationPipe) body: TeamUpdateBalanceDto,
   ) {
     return this.teamService.updateBalance(req.user.email, id, body);

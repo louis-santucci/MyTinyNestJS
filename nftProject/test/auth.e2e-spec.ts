@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AuthModule } from '../src/Auth/auth.module';
+import { Role } from '.prisma/client';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -26,7 +27,7 @@ describe('AuthController (e2e)', () => {
           name: 'Name',
           email: 'email@gmail.com',
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab',
-          role: 'ADMIN',
+          role: Role.ADMIN,
         })
         .expect(201)
         .then((res) => {
@@ -41,7 +42,7 @@ describe('AuthController (e2e)', () => {
           name: 'Name',
           email: 'email@gmail.com',
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab',
-          role: 'USER',
+          role: Role.ADMIN,
         })
         .expect(400);
     });
@@ -64,7 +65,7 @@ describe('AuthController (e2e)', () => {
           name: 'Name',
           email: 'email@gmail.com',
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabffffff',
-          role: 'USER',
+          role: Role.USER,
         })
         .expect(400);
     });

@@ -4,7 +4,7 @@ import { AuthModule } from '../src/Auth/auth.module';
 import * as request from 'supertest';
 import { NftModule } from '../src/NFTs/nft.module';
 
-describe('[3] NFTController (e2e)', () => {
+describe('NFTController (e2e)', () => {
   let app: INestApplication;
 
   let userPassword: string = null;
@@ -15,7 +15,7 @@ describe('[3] NFTController (e2e)', () => {
   const adminMail = 'admin@gmail.com';
   const otherUserMail = 'other@mail.com';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [NftModule, AuthModule],
     }).compile();

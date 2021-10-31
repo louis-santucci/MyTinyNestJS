@@ -6,7 +6,7 @@ import { AuthModule } from '../src/Auth/auth.module';
 import { Role } from '.prisma/client';
 import { PrismaClient } from '@prisma/client';
 
-describe('[2] TeamController (e2e)', () => {
+describe('TeamController (e2e)', () => {
   let app: INestApplication;
 
   let userPassword: string = null;
@@ -17,7 +17,7 @@ describe('[2] TeamController (e2e)', () => {
   const adminMail = 'admin@gmail.com';
   const otherUserMail = 'other@mail.com';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [TeamModule, AuthModule],
     }).compile();

@@ -5,13 +5,13 @@ import { AuthModule } from '../src/Auth/auth.module';
 import { Role } from '.prisma/client';
 import { PrismaClient } from '@prisma/client';
 
-describe('[1] AuthController (e2e)', () => {
+describe('AuthController (e2e)', () => {
   let app: INestApplication;
 
   let userPassword: string;
   let accessToken: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AuthModule],
     }).compile();

@@ -14,7 +14,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "docker-compose -f ../docker-compose.e2e.yml down && docker-compose -f ../docker-compose.e2e.yml build && docker-compose -f ../docker-compose.e2e.yml up --abort-on-container-exit",
+    "test": "docker-compose -f ../docker-compose.e2e.yml down && docker-compose -f ../docker-compose.e2e.yml build && docker-compose -f ../docker-compose.e2e.yml up -d && docker-compose -f ../docker-compose.e2e.yml logs --follow app",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",

@@ -14,6 +14,7 @@ export class NftRateDto {
   @Max(5)
   @ApiProperty({
     description: 'The value of the rate',
+    example: 5
   })
   rate: number;
 }

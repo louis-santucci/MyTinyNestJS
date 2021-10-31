@@ -63,7 +63,7 @@ export class TeamController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Function to create a team as a logged user.',
     type: TeamResponse,
   })

@@ -36,6 +36,7 @@ import { diskStorage } from 'multer';
 import { ApiImplicitFile } from '@nestjs/swagger/dist/decorators/api-implicit-file.decorator';
 import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
 import { NftUpdateStatusDto } from './DTO/nft-update-status.dto';
+import { NftResponse } from './DTO/nft-response.dto';
 
 @ApiTags('Nft')
 @Controller('nft')
@@ -44,43 +45,12 @@ export class NftController {
 
   private readonly logger = new Logger(NftController.name);
 
-  @Post('/:id/updateStatus')
-  @ApiOperation({
-    summary: 'Changes the status of a collection and all of its NFTs',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Update the status of an existing NftCollection',
-    type: [Array],
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'the id of the NFT',
-    required: true,
-  })
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiBody({
-    type: NftUpdateStatusDto,
-    description: 'The status to change',
-  })
-  updateNftStatus(
-    @Param('id') id : number,
-    @Request() req,
-    @Body(ValidationPipe) body: NftUpdateStatusDto,
-  ) {
-    this.logger.log(id);
-    this.logger.log(body);
-    return this.nftService.updateStatusNft(req.user.email, id, body.status);
-  }
-
   @Get('/')
   @ApiOperation({ summary: 'Get all NFT' })
   @ApiResponse({
     status: 200,
     description: 'The list of all NFT',
-    type: [Array],
+    type: [NftResponse],
   })
   @ApiQuery({
     name: 'offset',
@@ -116,7 +86,7 @@ export class NftController {
   @ApiResponse({
     status: 200,
     description: 'The list of all your NFT',
-    type: [Array],
+    type: [NftResponse],
   })
   async getOwnNFTs(@Request() req) {
     return this.nftService.getOwnNFTs(req.user.email);
@@ -127,7 +97,7 @@ export class NftController {
   @ApiResponse({
     status: 200,
     description: 'Highest rated NFT',
-    type: [Array],
+    type: NftResponse,
   })
   async getHighestRatedNft() {
     const result = await this.nftService.getHighestRatedNft();
@@ -145,7 +115,7 @@ export class NftController {
   @ApiResponse({
     status: 200,
     description: 'Most rated NFT',
-    type: [Array],
+    type: NftResponse,
   })
   async getMostRatedNft() {
     const result = await this.nftService.getMostRatedNft();
@@ -163,9 +133,9 @@ export class NftController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Rate NFT',
-    type: [Array],
+    type: NftResponse,
   })
   @ApiBody({
     type: NftRateDto,
@@ -188,6 +158,7 @@ export class NftController {
   @ApiResponse({
     status: 200,
     description: 'The wanted NFT',
+    type: NftResponse
   })
   @ApiParam({
     name: 'id',
@@ -247,8 +218,9 @@ export class NftController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'NFT added',
+    type: NftResponse
   })
   @ApiBody({
     type: NftCreateDto,
@@ -283,7 +255,7 @@ export class NftController {
   @ApiResponse({
     status: 200,
     description: 'NFT updated',
-    type: [Array],
+    type: NftResponse,
   })
   @ApiBody({
     type: NftUpdateDto,
@@ -305,5 +277,36 @@ export class NftController {
       req.user.email,
       file.filename,
     );
+  }
+
+  @Post('/:id/updateStatus')
+  @ApiOperation({
+    summary: 'Changes the status of a collection and all of its NFTs',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Update the status of an existing NftCollection',
+    type: NftResponse,
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'the id of the NFT',
+    required: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({
+    type: NftUpdateStatusDto,
+    description: 'The status to change',
+  })
+  updateNftStatus(
+    @Param('id') id : number,
+    @Request() req,
+    @Body(ValidationPipe) body: NftUpdateStatusDto,
+  ) {
+    this.logger.log(id);
+    this.logger.log(body);
+    return this.nftService.updateStatusNft(req.user.email, id, body.status);
   }
 }

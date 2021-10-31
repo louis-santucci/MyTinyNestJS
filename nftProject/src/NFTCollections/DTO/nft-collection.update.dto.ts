@@ -7,6 +7,7 @@ export class NftCollectionUpdateDto {
   @IsString()
   @ApiProperty({
     description: 'The name of a NftCollection',
+    example: 'NftCollectionTest'
   })
   name: string;
 }

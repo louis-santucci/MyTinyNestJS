@@ -12,6 +12,7 @@ export class NftUpdateDto {
   @IsNotEmpty()
   @ApiProperty({
     description: 'The name of the NFT',
+    example: 'testNft'
   })
   name: string;
 
@@ -22,6 +23,7 @@ export class NftUpdateDto {
   })
   @ApiProperty({
     description: 'The price of the NFT',
+    example: 100
   })
   price: number;
 
@@ -29,6 +31,7 @@ export class NftUpdateDto {
   @IsNumberString()
   @ApiProperty({
     description: 'The collection Id of the NFT',
+    example: 1
   })
   nftCollectionId: number;
 }

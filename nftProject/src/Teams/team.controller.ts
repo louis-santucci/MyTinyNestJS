@@ -104,6 +104,7 @@ export class TeamController {
   @ApiParam({
     name: 'id',
     description: 'The wanted Team id',
+    example: 1
   })
   async getNFT(@Param('id') teamId) {
     const team = await this.teamService.getTeam(teamId);
@@ -123,6 +124,11 @@ export class TeamController {
   @ApiResponse({
     status: 201,
     description: 'Update the balance of a Team only if the user is an Admin.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The wanted Team id',
+    example: 1
   })
   async updateBalance(
     @Request() req,

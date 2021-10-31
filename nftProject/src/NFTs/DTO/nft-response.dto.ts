@@ -12,7 +12,7 @@ export class NftResponse {
   @IsString()
   @ApiProperty({
     description: 'The name of the NFT',
-    example: 'name'
+    example: 'testNft'
   })
   name: string;
 
@@ -31,7 +31,7 @@ export class NftResponse {
 
   @ApiProperty({
     description: 'The price of the NFT',
-    example: 42
+    example: 100
   })
   price: number;
 

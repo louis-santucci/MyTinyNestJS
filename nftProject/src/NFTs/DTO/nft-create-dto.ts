@@ -7,12 +7,14 @@ export class NftCreateDto {
   @IsNotEmpty()
   @ApiProperty({
     description: 'The name of the NFT',
+    example: 'testNft'
   })
   name: string;
 
   @IsNotEmpty()
   @ApiProperty({
     description: 'The owner of the NFT',
+    example: 1
   })
   userId: number;
 
@@ -23,6 +25,7 @@ export class NftCreateDto {
   })
   @ApiProperty({
     description: 'The price of the NFT',
+    example: 100
   })
   price: number;
 }

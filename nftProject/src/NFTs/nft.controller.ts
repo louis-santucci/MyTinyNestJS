@@ -144,6 +144,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   async rateNft(
     @Param() { id }: FindOneParams,
@@ -163,6 +164,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   async getNFT(@Param('id') ntfId) {
     const nft = await this.nftService.getNFT(ntfId);
@@ -188,6 +190,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   async getNFTImage(@Param('id') NftId, @Res() res) {
     const nft = await this.nftService.getNFT(NftId);
@@ -264,6 +267,7 @@ export class NftController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   async updateNft(
     @UploadedFile() file,
@@ -293,6 +297,7 @@ export class NftController {
     type: Number,
     description: 'the id of the NFT',
     required: true,
+    example: 1
   })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

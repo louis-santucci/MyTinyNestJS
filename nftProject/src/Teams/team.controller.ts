@@ -12,13 +12,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { TeamService } from './team.service';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { TeamCreateDto } from './DTO/team-create.dto';
 import { TeamAddMemberDto } from './DTO/team-add-member.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
 import { JwtAuthGuard } from '../Auth/jwt.auth.guard';
 import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
+import { TeamResponse } from './DTO/team-response.dto';
 
 @ApiTags('Team')
 @Controller('team')
@@ -30,7 +31,7 @@ export class TeamController {
   @ApiResponse({
     status: 200,
     description: 'The list of all Teams',
-    type: [Array],
+    type: [TeamResponse],
   })
   @ApiQuery({
     name: 'offset',
@@ -64,7 +65,11 @@ export class TeamController {
   @ApiResponse({
     status: 200,
     description: 'Function to create a team as a logged user.',
-    type: [String],
+    type: TeamResponse,
+  })
+  @ApiBody({
+    type: TeamCreateDto,
+    description: 'The new team',
   })
   async createTeam(@Request() req, @Body(ValidationPipe) body: TeamCreateDto) {
     return this.teamService.createTeam(req.user.email, body);
@@ -75,9 +80,12 @@ export class TeamController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Function to create a team as a logged user.',
-    type: [String],
+  })
+  @ApiBody({
+    type: TeamAddMemberDto,
+    description: 'The new member of the team',
   })
   async addMember(
     @Request() req,
@@ -91,6 +99,7 @@ export class TeamController {
   @ApiResponse({
     status: 200,
     description: 'The wanted Team',
+    type: TeamResponse,
   })
   @ApiParam({
     name: 'id',
@@ -112,9 +121,8 @@ export class TeamController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Update the balance of a Team only if the user is an Admin.',
-    type: [String],
   })
   async updateBalance(
     @Request() req,

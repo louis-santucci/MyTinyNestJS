@@ -6,6 +6,7 @@ export class TeamCreateDto {
   @IsString()
   @ApiProperty({
     description: 'The name of a Team',
+    example: 'testTeam'
   })
   name: string;
 }

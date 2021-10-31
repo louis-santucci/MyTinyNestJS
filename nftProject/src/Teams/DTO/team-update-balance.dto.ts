@@ -7,6 +7,7 @@ export class TeamUpdateBalanceDto {
   @Min(0)
   @ApiProperty({
     description: 'The balance of a Team',
+    example: 1000
   })
   balance: number;
 }

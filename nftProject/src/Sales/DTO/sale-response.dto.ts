@@ -1,7 +1,13 @@
 import { ApiProperty, ApiBody } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class SaleCreateDto {
+export class SaleResponse {
+  @ApiProperty({
+    description: 'The id of the sale',
+    example: 1
+  })
+  id: number;
+
   @IsNotEmpty()
   @ApiProperty({
     description: 'The id of the buyer',

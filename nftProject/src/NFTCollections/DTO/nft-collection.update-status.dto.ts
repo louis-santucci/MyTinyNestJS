@@ -7,6 +7,7 @@ export class NftCollectionUpdateStatusDto {
   @IsString()
   @ApiProperty({
     description: 'The status of a NftCollection',
+    example: Status.DRAFT
   })
   status: Status;
 }

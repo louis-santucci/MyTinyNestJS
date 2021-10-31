@@ -36,6 +36,7 @@ import { NftCollectionDto } from './DTO/nft-collection.dto';
 import { LimitDto, OffsetDto } from '../Utils/pagination.utils';
 import { NftCollectionUpdateDto } from './DTO/nft-collection.update.dto';
 import { NftCollectionUpdateStatusDto } from './DTO/nft-collection.update-status.dto';
+import { NftCollectionResponse } from './DTO/nft-collection.response.dto';
 
 @ApiTags('NFT Collection')
 @Controller('nftcollection')
@@ -61,10 +62,10 @@ export class NftCollectionController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description:
       "Create a NftCollection if the team doesn't have a NftCollection.",
-    type: [String],
+    type: NftCollectionResponse,
   })
   @ApiBody({
     type: NftCollectionDto,
@@ -87,17 +88,19 @@ export class NftCollectionController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Add a NFT to a NftCollection',
-    type: [Array],
+    type: NftCollectionResponse,
   })
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   @ApiParam({
     name: 'collectionId',
     description: 'The wanted collection Id',
+    example: 1
   })
   async addNft(
     @Request() req,
@@ -112,17 +115,19 @@ export class NftCollectionController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Delete a NFT to a NftCollection',
-    type: [Array],
+    type: NftCollectionResponse,
   })
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   @ApiParam({
     name: 'collectionId',
     description: 'The wanted collection id',
+    example: 1
   })
   async deleteNft(
     @Request() req,
@@ -143,7 +148,7 @@ export class NftCollectionController {
   @ApiResponse({
     status: 200,
     description: 'Update an existing NftCollection',
-    type: [Array],
+    type: NftCollectionResponse,
   })
   @UseInterceptors(
     FileInterceptor('image', {
@@ -190,6 +195,7 @@ export class NftCollectionController {
   @ApiParam({
     name: 'id',
     description: 'The wanted NFT id',
+    example: 1
   })
   async getNFTImage(@Param('id') collectionId, @Res() res) {
     const collection = await this.nftCollectionService.getCollection(
@@ -208,15 +214,16 @@ export class NftCollectionController {
     summary: 'Changes the status of a collection and all of its NFTs',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Update the status of an existing NftCollection',
-    type: [Array],
+    type: NftCollectionResponse,
   })
   @ApiParam({
     name: 'id',
     type: Number,
     description: 'the id of the collection',
     required: true,
+    example: 1
   })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -241,7 +248,7 @@ export class NftCollectionController {
   @ApiResponse({
     status: 200,
     description: 'The list of all NFT collections',
-    type: [Array],
+    type: [NftCollectionResponse],
   })
   @ApiQuery({
     name: 'offset',
@@ -283,10 +290,12 @@ export class NftCollectionController {
   @ApiResponse({
     status: 200,
     description: 'The wanted collection',
+    type: NftCollectionResponse,
   })
   @ApiParam({
     name: 'id',
     description: 'The wanted collection Id',
+    example: 1
   })
   async getCollection(@Param('id') collectionId) {
     const collection = await this.nftCollectionService.getCollection(
@@ -314,6 +323,7 @@ export class NftCollectionController {
   @ApiParam({
     name: 'id',
     description: 'The wanted collection id',
+    example: 1
   })
   async getCollectionImage(@Param('id') collectionId, @Res() res) {
     const collection = await this.nftCollectionService.getCollection(

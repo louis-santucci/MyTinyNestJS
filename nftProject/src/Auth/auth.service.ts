@@ -33,26 +33,28 @@ export class AuthService {
 
   // Function that takes a AuthCredentialsDto and creates a user in the DB.
   // Returns the created user
-  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<User> {
-    // Get info from the User DTO
-    const { name, email, blockchainAddress } = authCredentialsDto;
-
-    // Generates a random password that will be returned
-    const generatedPassword = AuthService.generatePassword();
-
-    const user: UserCreateDto = new UserCreateDto();
-    user.name = name;
-    user.email = email;
-    user.blockchainAddress = blockchainAddress;
-    user.password = generatedPassword;
-    user.role = Role.USER;
-
+  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<any> {
     try {
-      return this.prismaService.user.create({
+      // Get info from the User DTO
+      const { name, email, blockchainAddress } = authCredentialsDto;
+
+      // Generates a random password that will be returned
+      const generatedPassword = AuthService.generatePassword();
+
+      const user: UserCreateDto = new UserCreateDto();
+      user.name = name;
+      user.email = email;
+      user.blockchainAddress = blockchainAddress;
+      user.password = generatedPassword;
+      user.role = Role.USER;
+
+      await this.prismaService.user.create({
         data: user,
       });
+
+      return { password: generatedPassword };
     } catch (e) {
-      this.logger.error('Error adding new user ', e);
+      throw new HttpException('Error while signing up', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -71,10 +73,13 @@ export class AuthService {
           accessToken: this.jwtService.sign(payload),
         };
       } else {
-        throw new HttpException('Invalid credentials', HttpStatus.FORBIDDEN);
+        throw new HttpException(
+          'Error while signing in',
+          HttpStatus.BAD_REQUEST,
+        );
       }
     } catch (e) {
-      throw new HttpException('Invalid credentials', HttpStatus.FORBIDDEN);
+      throw new HttpException('Error while signing in', HttpStatus.BAD_REQUEST);
     }
   }
 

@@ -26,7 +26,7 @@ describe('AuthController (e2e)', () => {
           name: 'Name',
           email: 'email@gmail.com',
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab',
-          role: 'USER',
+          role: 'ADMIN',
         })
         .expect(201)
         .then((res) => {
@@ -43,10 +43,10 @@ describe('AuthController (e2e)', () => {
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab',
           role: 'USER',
         })
-        .expect(403);
+        .expect(400);
     });
 
-    it('(POST) /auth/signup - Invalid credentials (no role)', () => {
+    it('(POST) /auth/signup - Invalid (no role)', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
         .send({
@@ -54,7 +54,7 @@ describe('AuthController (e2e)', () => {
           email: 'email@gmail.com',
           blockchainAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab',
         })
-        .expect(403);
+        .expect(400);
     });
 
     it('(POST) /auth/signup - Invalid address format', () => {
@@ -90,7 +90,7 @@ describe('AuthController (e2e)', () => {
         .send({
           email: 'email@gmail.com',
         })
-        .expect(403);
+        .expect(400);
     });
 
     it('(POST) /auth/signin - User doesnt exist', () => {
@@ -100,7 +100,7 @@ describe('AuthController (e2e)', () => {
           email: 'xxxemail@gmail.com',
           password: userPassword,
         })
-        .expect(403);
+        .expect(400);
     });
 
     it('(POST) /auth/signin - Wrong password', () => {
@@ -110,19 +110,19 @@ describe('AuthController (e2e)', () => {
           email: 'email@gmail.com',
           password: userPassword + 'x',
         })
-        .expect(403);
+        .expect(400);
     });
   });
 
   describe('/auth/me', () => {
-    it('(GET) /auth/me - Valid token', () => {
+    it('(GET)  /auth/me - Valid token', () => {
       return request(app.getHttpServer())
         .get('/auth/me')
         .auth(accessToken, { type: 'bearer' })
         .expect(200);
     });
 
-    it('(GET) /auth/me - Invalid token', () => {
+    it('(GET)  /auth/me - Invalid token', () => {
       return request(app.getHttpServer())
         .get('/auth/me')
         .auth(accessToken + 'XXXXXX', { type: 'bearer' })

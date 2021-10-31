@@ -8,7 +8,9 @@ import {
   Logger,
   Get,
   HttpException,
-  HttpStatus, Res, HttpCode,
+  HttpStatus,
+  Res,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from '.prisma/client';
@@ -38,8 +40,8 @@ export class AuthController {
     type: String,
   })
   @ApiResponse({
-    status: 403,
-    description: 'The user cannot be created',
+    status: 400,
+    description: 'The user could not be created',
   })
   @ApiBody({
     type: AuthCredentialsDto,
@@ -48,26 +50,7 @@ export class AuthController {
   async signUp(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<any> {
-    try {
-      const newUser: User = await this.authService.signUp(authCredentialsDto);
-      this.logger.log(
-        '[SIGNUP] Created user { timestamp:' +
-          new Date() +
-          ', email:' +
-          newUser.email +
-          ', role:' +
-          newUser.role +
-          '}',
-      );
-      return {
-        password: newUser.password,
-      };
-    } catch (e) {
-      throw new HttpException(
-        'Forbidden : User cannot be created',
-        HttpStatus.FORBIDDEN,
-      );
-    }
+    return this.authService.signUp(authCredentialsDto);
   }
 
   @ApiOperation({ summary: 'Logs a user in' })
@@ -77,7 +60,7 @@ export class AuthController {
     type: String,
   })
   @ApiResponse({
-    status: 403,
+    status: 400,
     description: 'Bad credentials',
   })
   @ApiBody({

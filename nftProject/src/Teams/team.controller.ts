@@ -54,10 +54,7 @@ export class TeamController {
     @Query('offset') offset = 0,
     @Query('limit') limit = 10,
   ) {
-    if (search) {
-      return this.teamService.searchTeam(search, Number(offset), Number(limit));
-    }
-    return this.teamService.getTeams(Number(offset), Number(limit));
+    return this.teamService.searchTeam(search, Number(offset), Number(limit));
   }
 
   @Post('/')

@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TeamCreateDto } from './DTO/team-create.dto';
 import { TeamUpdateBalanceDto } from './DTO/team-update-balance.dto';
 import { Role } from '.prisma/client';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class TeamService {
@@ -14,51 +15,33 @@ export class TeamService {
 
   private readonly logger = new Logger(TeamService.name);
 
-  async getTeams(offset?: number, limit?: number) {
+  async searchTeam(searchStr = '', offset: number, limit: number) {
     if (offset < 0) {
       throw new HttpException(
         'The offset cannot be inferior to 0',
-        HttpStatus.FORBIDDEN,
+        HttpStatus.BAD_REQUEST,
       );
     }
     if (limit < 1) {
       throw new HttpException(
         'The limit cannot be inferior to 1',
-        HttpStatus.FORBIDDEN,
+        HttpStatus.BAD_REQUEST,
       );
     }
-    return this.prismaService.team.findMany({
+
+    const teams = await this.prismaService.team.findMany({
       orderBy: {
         id: 'asc',
       },
       take: limit,
       skip: offset,
     });
-  }
 
-  async searchTeam(name: string, offset: number, limit: number) {
-    const teams = await this.getTeams();
-    name = name.toLowerCase();
+    searchStr = searchStr.toLowerCase();
 
-    if (offset < 0) {
-      throw new HttpException(
-        'The offset cannot be inferior to 0',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-    if (limit < 1) {
-      throw new HttpException(
-        'The limit cannot be inferior to 1',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    if (teams === null) {
-      return null;
-    }
     const results = [];
     teams.forEach((team) => {
-      if (team.name.toLowerCase().includes(name)) {
+      if (searchStr === '' || team.name.toLowerCase().includes(searchStr)) {
         results.push(team);
       }
     });
@@ -80,30 +63,36 @@ export class TeamService {
       },
     });
 
-    if (user.teamId === null) {
-      try {
-        const team = await this.prismaService.team.create({
-          data: {
-            name: body.name,
-            leaderEmail: user_email,
-            balance: 0,
-          },
-        });
-
-        return await this.prismaService.user.update({
-          where: {
-            email: user_email,
-          },
-          data: {
-            teamId: team.id,
-          },
-        });
-      } catch (e) {
-        this.logger.error('Error creating a team', e);
-      }
+    if (user.teamId !== null) {
+      throw new HttpException(
+        'The user already have a team',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    throw new HttpException('You cannot have two teams', HttpStatus.FORBIDDEN);
+    try {
+      const team = await this.prismaService.team.create({
+        data: {
+          name: body.name,
+          leaderEmail: user_email,
+          balance: 0,
+        },
+      });
+
+      return await this.prismaService.user.update({
+        where: {
+          email: user_email,
+        },
+        data: {
+          teamId: team.id,
+        },
+      });
+    } catch (e) {
+      throw new HttpException(
+        'Error adding a team to this user',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async addMember(user_email: string, member_email: string) {
@@ -119,18 +108,8 @@ export class TeamService {
       },
     });
 
-    if (newMember.teamId !== null) {
-      throw new HttpException(
-        'This user already have a team, you can not add this user to your team.',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    if (user.teamId === null) {
-      throw new HttpException(
-        "You don't have a team to add a member.",
-        HttpStatus.FORBIDDEN,
-      );
+    if (newMember === null || newMember === undefined) {
+      return new HttpException('New member not found', 400);
     }
 
     const team = await this.prismaService.team.findUnique({
@@ -138,6 +117,11 @@ export class TeamService {
         id: user.teamId,
       },
     });
+
+    if (team === null || team === undefined) {
+      return new HttpException('User not in team', 400);
+    }
+
     try {
       return this.prismaService.user.update({
         where: {
@@ -148,7 +132,7 @@ export class TeamService {
         },
       });
     } catch (e) {
-      this.logger.error('Error adding a member in a team', e);
+      return new HttpException('Error adding new member to team', 400);
     }
   }
 

@@ -22,7 +22,7 @@ services :
     container_name: app
     build:
       context: ./nftProject
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.e2e
     ports:
       - 3000:3000
     environment:
